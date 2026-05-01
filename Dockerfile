@@ -1,8 +1,10 @@
-# استخدام نسخة Java المستقرة
-FROM eclipse-temurin:17-jdk-alpine
+# المرحلة الأولى: بناء المشروع باستخدام Maven
+FROM maven:3.8.4-openjdk-17 AS build
+COPY . .
+RUN mvn clean package -DskipTests
 
-# نسخ ملف المشروع النهائي لداخل السيرفر
-COPY target/*.jar app.jar
-
-# الأمر اللي بيشغل المنظومة
-ENTRYPOINT ["java","-jar","/app.jar"]
+# المرحلة الثانية: تشغيل المشروع
+FROM openjdk:17-jdk-slim
+COPY --from=build /target/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
