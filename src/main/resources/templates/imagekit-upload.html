@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload ImageKit + Shipment</title>
+</head>
+<body>
+
+<h2>📤 رفع وربط مستند بالشحنة</h2>
+
+<!-- اختيار الشحنة -->
+<label>اختار الشحنة:</label>
+<select id="shipmentId">
+    <option value="1">شحنة 1</option>
+</select>
+
+<br><br>
+
+<input type="file" id="fileInput">
+<button onclick="upload()">رفع الصورة وربطها</button>
+
+<p id="msg"></p>
+
+<script>
+
+const publicKey = "public_80IFZLJ87Rpxk1Gj8nCYPqTddJ0=";
+
+async function getAuth() {
+    const res = await fetch("/imagekit/auth");
+    return await res.json();
+}
+
+async function upload() {
+
+    const file = document.getElementById("fileInput").files[0];
+    const shipmentId = document.getElementById("shipmentId").value;
+
+    if(!file){
+        alert("اختار صورة أولاً");
+        return;
+    }
+
+    const auth = await getAuth();
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", file.name);
+    formData.append("publicKey", publicKey);
+    formData.append("signature", auth.signature);
+    formData.append("token", auth.token);
+    formData.append("expire", auth.expire);
+    formData.append("folder", "/customs");
+
+    const response = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await response.json();
+
+    console.log(data);
+
+    if(data.url){
+
+        // 🔥 ربط الصورة بالشحنة
+        await fetch("/documents/add", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: `shipmentId=${shipmentId}&fileUrl=${data.url}&type=OTHER`
+        });
+
+        document.getElementById("msg").innerText =
+            "✔ تم رفع وربط الصورة بالشحنة";
+
+    } else {
+        document.getElementById("msg").innerText =
+            "❌ فشل الرفع";
+    }
+}
+
+</script>
+
+</body>
+</html>

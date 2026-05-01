@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${pageTitle}">إدارة الشحنات - منظومة الأرشيف</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --primary: #1e293b;
+            --accent: #2563eb;
+            --accent-glow: rgba(37, 99, 235, 0.15);
+            --bg-body: #f1f5f9;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --white: #ffffff;
+            --success: #059669;
+            --danger: #dc2626;
+            --shadow-md: 0 10px 25px -5px rgba(0,0,0,0.08);
+            --radius: 16px;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-body);
+            background-image: radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.05) 0px, transparent 50%), 
+                              radial-gradient(at 100% 100%, rgba(37, 99, 235, 0.05) 0px, transparent 50%);
+            margin: 0; padding: 40px; color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        .back-fab {
+            position: fixed; bottom: 40px; left: 40px;
+            background: var(--white); color: var(--primary);
+            width: 60px; height: 60px; border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--shadow-md); transition: 0.4s;
+            z-index: 1000; border: 1px solid rgba(255,255,255,0.8); cursor: pointer;
+        }
+        .back-fab:hover { transform: translateY(-5px); background: var(--primary); color: white; }
+
+        .header-main { 
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 40px; background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px); padding: 25px 40px;
+            border-radius: var(--radius); box-shadow: var(--shadow-md);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .header-info { display: flex; align-items: center; gap: 25px; }
+        .portal-btn {
+            background: var(--primary); color: white; text-decoration: none;
+            padding: 12px 25px; border-radius: 12px; font-weight: 600;
+            display: flex; align-items: center; gap: 12px; transition: 0.3s;
+        }
+        .portal-btn:hover { background: var(--accent); }
+
+        .tabs-container { display: flex; gap: 12px; margin-bottom: -1px; padding: 0 20px; }
+        .tab-link {
+            padding: 14px 28px; background: rgba(226, 232, 240, 0.5); 
+            border-radius: 14px 14px 0 0; text-decoration: none; 
+            color: var(--text-muted); font-weight: 700; transition: 0.3s;
+        }
+        .tab-link.active {
+            background: var(--white); color: var(--accent);
+            border-top: 4px solid var(--accent); position: relative; z-index: 2;
+        }
+
+        .workspace {
+            background: var(--white); border-radius: var(--radius);
+            padding: 40px; box-shadow: var(--shadow-md);
+            border: 1px solid rgba(255,255,255,0.7); min-height: 500px;
+        }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0 15px; }
+        th { padding: 15px 20px; color: var(--text-muted); font-size: 0.9rem; text-align: center; }
+        td { padding: 20px; text-align: center; background: #ffffff; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
+        tr td:first-child { border-right: 1px solid #f1f5f9; border-radius: 0 18px 18px 0; }
+        tr td:last-child { border-left: 1px solid #f1f5f9; border-radius: 18px 0 0 18px; }
+
+        .stat-badge { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; padding: 6px 16px; border-radius: 8px; font-weight: 700; }
+
+        /* زر عرض السبب الجديد */
+        .btn-reason {
+            background: #fff1f2; color: var(--danger); border: 1px solid #fecaca;
+            padding: 5px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;
+            font-weight: 700; transition: 0.3s; margin-top: 5px;
+        }
+        .btn-reason:hover { background: var(--danger); color: white; }
+
+        .btn-mini { padding: 10px 20px; border-radius: 10px; border: none; font-family: 'Cairo'; font-weight: 700; cursor: pointer; text-decoration: none; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-view { background: var(--accent-glow); color: var(--accent); }
+        .btn-approve { background: rgba(5, 150, 105, 0.1); color: var(--success); }
+        .btn-reject { background: rgba(220, 38, 38, 0.1); color: var(--danger); }
+        .btn-delete { background: #f1f5f9; color: var(--text-muted); width: 40px; height: 40px; border-radius: 10px; border: none; cursor: pointer; }
+
+        .pagination-container { margin-top: 40px; display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #f8fafc; padding-top: 20px; }
+        .pagination-list { display: flex; gap: 8px; list-style: none; }
+        .page-item-link { text-decoration: none; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border-radius: 10px; font-weight: 700; color: var(--primary); }
+        .page-item-link.active { background: var(--primary); color: white; }
+    </style>
+</head>
+<body>
+
+    <button onclick="smartBack()" class="back-fab" title="الرجوع للرئيسية">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    </button>
+
+    <div class="header-main">
+        <div class="header-info">
+            <h2 th:text="${pageTitle}">إدارة الشحنات الذكية</h2>
+            <a th:href="@{/}" class="portal-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                البوابة الرئيسية
+            </a>
+        </div>
+        <div style="text-align: left;">
+            <div style="font-size: 0.85rem; color: var(--text-muted);">تاريخ النظام</div>
+            <div style="font-size: 1rem; color: var(--primary); font-weight: 700;" th:text="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"></div>
+        </div>
+    </div>
+
+    <div class="tabs-container">
+        <a th:href="@{/shipments(status='PENDING', keyword=${keyword})}" class="tab-link" th:classappend="${currentStatus == 'PENDING' ? 'active' : ''}">📥 قيد المراجعة</a>
+        <a th:href="@{/shipments(status='APPROVED', keyword=${keyword})}" class="tab-link" th:classappend="${currentStatus == 'APPROVED' ? 'active' : ''}">✅ معتمدة</a>
+        <a th:href="@{/shipments(status='REJECTED', keyword=${keyword})}" class="tab-link" th:classappend="${currentStatus == 'REJECTED' ? 'active' : ''}">❌ مرفوضة</a>
+    </div>
+
+    <div class="workspace">
+        <form th:action="@{/shipments}" method="get" class="search-box" style="display: flex; gap: 10px; margin-bottom: 30px; background: #f8fafc; padding: 8px; border-radius: 15px;">
+            <input type="hidden" name="status" th:value="${currentStatus}"> 
+            <input type="text" name="keyword" th:value="${keyword}" style="flex: 1; border: none; background: transparent; padding: 10px; font-family: 'Cairo';" placeholder="ابحث برقم الحاوية أو المخلص...">
+            <button type="submit" style="background: var(--primary); color: white; border: none; padding: 10px 30px; border-radius: 12px; cursor: pointer; font-weight: 700;">بحث</button>
+        </form>
+
+        <div th:if="${not #lists.isEmpty(shipments)}">
+            <table>
+                <thead>
+                    <tr>
+                        <th>رقم الحاوية</th>
+                        <th>المخلص الجمركي</th>
+                        <th>الرمز الإحصائي</th>
+                        <th>الحالة </th>
+                        <th>العمليات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="s : ${shipments}">
+                        <td><strong th:text="${s.containerNumber}" style="color: var(--primary); font-size: 1.1rem;"></strong></td>
+                        <td th:text="${s.customsbroker}" style="font-weight: 600;"></td>
+                        <td><span class="stat-badge" th:text="${s.statisticalCode}"></span></td>
+                        <td>
+                            <div th:if="${s.status.name() == 'REJECTED'}">
+                                <span style="color: var(--danger); font-weight: 700;">❌ مرفوضة</span><br>
+                                <!-- زر العرض عند الضغط كما طلبت -->
+                                <button class="btn-reason" th:onclick="showReason([[${s.rejectionReason}]])">🔎 عرض السبب</button>
+                            </div>
+                            <span th:if="${s.status.name() == 'APPROVED'}" style="color: var(--success); font-weight: 700;">✅ معتمدة</span>
+                            <span th:if="${s.status.name() == 'PENDING'}" style="color: var(--text-muted); font-weight: 700;">⏳ قيد المراجعة</span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
+                                <a th:href="@{'/shipments/view-docs/' + ${s.id}}" class="btn-mini btn-view">عرض</a>
+                                <th:block th:if="${s.status.name() == 'PENDING'}">
+                                    <button class="btn-mini btn-approve" th:onclick="'fireConfirm(' + ${s.id} + ', \'approve\')'">اعتماد</button>
+                                    <button class="btn-mini btn-reject" th:onclick="'fireConfirm(' + ${s.id} + ', \'reject\')'">رفض</button>
+                                </th:block>
+                                <button class="btn-delete" th:onclick="'fireDelete(' + ${s.id} + ')'">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- ترقيم الصفحات (بدون أي ضياع) -->
+            <div class="pagination-container" th:if="${totalPages > 1}">
+                <div class="page-info">صفحة <span th:text="${currentPage + 1}"></span> من <span th:text="${totalPages}"></span></div>
+                <ul class="pagination-list" style="margin:0; padding:0;">
+                    <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}" style="list-style:none;">
+                        <a th:href="@{/shipments(status=${currentStatus}, keyword=${keyword}, page=${i})}" 
+                           th:text="${i + 1}" class="page-item-link" th:classappend="${i == currentPage} ? 'active' : ''"></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div th:if="${#lists.isEmpty(shipments)}" style="text-align: center; padding: 100px 0;">
+             <h3 style="color: var(--text-muted);">لا توجد سجلات حالياً</h3>
+        </div>
+    </div>
+
+    <script>
+        function smartBack() { window.location.href = '/'; }
+
+function showReason(reason) {
+    Swal.fire({
+        title: '',
+        html: `
+            <div style="
+                background-image: url('/images/ty.png'); 
+                background-size: 100% 100%; 
+                background-repeat: no-repeat;
+                width: 100%; 
+                height: 550px; /* زدنا الطول الكلي */
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                box-sizing: border-box;
+                /* تعديل الـ padding لحصر النص في المربع الشفاف بالضبط */
+                padding: 100px 80px; 
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                border-radius: 15px;
+            ">
+                <div style="
+                    color: #1e293b;
+                    font-family: 'Cairo', sans-serif;
+                    text-align: center;
+                    word-wrap: break-word;
+                    overflow-y: auto; /* لو النص زاد جداً يسمح بالتمرير داخل المربع */
+                    max-height: 100%;
+                    width: 100%;
+                ">
+                    <h3 style="margin-bottom: 10px; font-size: 1rem; color: #1e293b; font-weight: 900;">
+                        سبب الرفض المسجل
+                    </h3>
+                    <p style="
+                        font-weight: 700; 
+                        font-size: 1.1rem; /* تصغير الخط درجة واحدة ليتسع للنصوص الطويلة */
+                        line-height: 1.6; 
+                        margin: 0;
+                        color: #0f172a;
+                    ">
+                        ${reason ? reason : 'لم يتم تحديد سبب'}
+                    </p>
+                </div>
+            </div>
+        `,
+        showConfirmButton: true,
+        confirmButtonColor: '#fb7185',
+        confirmButtonText: 'إغلاق',
+        width: '600px', /* تكبير عرض النافذة الكلي */
+        padding: '0',
+        background: 'transparent'
+    });
+}
+
+       function fireConfirm(id, actionType) {
+    if (actionType === 'approve') {
+        // حالة الاعتماد
+        Swal.fire({
+            title: 'اعتماد الشحنة؟',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#059669',
+            confirmButtonText: 'نعم، اعتماد',
+            cancelButtonText: 'إلغاء'
+        }).then((result) => { 
+            if (result.isConfirmed) window.location.href = '/shipments/approve/' + id; 
+        });
+    } else if (actionType === 'reject') {
+        // حالة الرفض مع حماية من النصوص الطويلة
+        Swal.fire({
+            title: 'تأكيد رفض الشحنة',
+            input: 'textarea',
+            inputPlaceholder: 'يرجى كتابة سبب الرفض هنا (مثلاً: عدم مطابقة المواصفات)...',
+            inputAttributes: {
+                maxlength: 1000, // يمنع الكتابة فوق 1000 حرف تقنياً
+                autocapitalize: 'off',
+                autocorrect: 'off'
+            },
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            confirmButtonText: 'حفظ الرفض',
+            cancelButtonText: 'تراجع',
+            footer: '<span id="char-count" style="color: #64748b; font-size: 0.8rem;">الحد الأقصى المسموح به: 1000 حرف</span>',
+            
+            // هذا الجزء يمنع ظهور صفحة الخطأ 500
+            preConfirm: (value) => {
+                if (!value) {
+                    Swal.showValidationMessage('عذراً، يجب إدخال سبب للرفض أولاً');
+                } else if (value.length > 1000) {
+                    Swal.showValidationMessage('النص طويل جداً! يرجى الاختصار لضمان التنسيق (أقل من 1000 حرف)');
+                }
+                return value;
+            }
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                // إنشاء النموذج وإرساله فقط إذا كان النص سليماً
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/shipments/reject/' + id;
+                
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'reason';
+                input.value = result.value;
+                
+                form.appendChild(input);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+}
+
+        function fireDelete(id) {
+            Swal.fire({ title: 'حذف السجل؟', icon: 'error', showCancelButton: true, confirmButtonColor: '#dc2626', confirmButtonText: 'حذف' })
+            .then((result) => { if (result.isConfirmed) window.location.href = '/shipments/delete/' + id; });
+        }
+    </script>
+</body>
+</html>

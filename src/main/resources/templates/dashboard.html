@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>منظومة الجمارك - لوحة التحكم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #3b82f6;
+            --success: #10b981;
+            --dark: #0f172a;
+            --light-bg: #f8fafc;
+            
+            /* التحكم في السرعة (ثواني) */
+            --pulse-speed: 4s;
+            --logo-speed: 6s;
+            --img-glow-speed: 15s;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--light-bg);
+            margin: 0; padding: 0; overflow-x: hidden;
+        }
+
+        /* 1. الهيدر الفخم */
+        .header-banner {
+            background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
+            padding: 45px 20px; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-bottom: 4px solid var(--secondary);
+            margin-bottom: 50px;
+        }
+
+        @keyframes logoExpose {
+            0% { filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2)) brightness(1); }
+            50% { filter: drop-shadow(0 0 35px rgba(255,255,255,0.4)) brightness(1.1); }
+            100% { filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2)) brightness(1); }
+        }
+
+        .header-banner img {
+            max-width: 550px;
+            animation: logoExpose var(--logo-speed) infinite ease-in-out;
+        }
+
+        /* 2. حاوية الكروت */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 35px; padding: 0 30px;
+        }
+
+        /* 3. تصميم الكارت */
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px 30px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--dark);
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--secondary);
+            box-shadow: 0 20px 45px rgba(59, 130, 246, 0.15);
+        }
+
+        /* 4. تنسيق صورة الحاوية (cv.jpg) */
+       /* تنسيق الصورة مع إضافة الوميض الأزرق النبضي */
+.container-img {
+    width: 160px;
+    height: auto;
+    margin-bottom: 20px;
+    transition: all 0.5s ease;
+    border-radius: 15px; /* لإعطاء حواف الصورة نعومة */
+    
+    /* تفعيل الوميض والحركة */
+    animation: blueGlowFloat 10s infinite ease-in-out;
+}
+
+@keyframes blueGlowFloat {
+    0% { 
+        transform: translateY(0); 
+        /* وميض أزرق خفيف */
+        filter: drop-shadow(0 5px 10px rgba(59, 130, 246, 0.4)); 
+    }
+    50% { 
+        transform: translateY(-12px); 
+        /* وميض أزرق قوي ومشع */
+        filter: drop-shadow(0 0 25px rgba(59, 130, 246, 0.8)) brightness(1.1); 
+    }
+    100% { 
+        transform: translateY(0); 
+        filter: drop-shadow(0 5px 10px rgba(59, 130, 246, 0.4)); 
+    }
+}
+
+/* زيادة التوهج عند تمرير الماوس */
+.card:hover .container-img {
+    transform: scale(1.1) rotate(2deg);
+    filter: drop-shadow(0 0 35px rgba(59, 130, 246, 0.9));
+}
+
+        /* وميض الأرقام */
+        @keyframes pulseNumber {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.05); color: var(--secondary); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+
+        .count {
+            font-size: 3.8rem; font-weight: 900; margin: 15px 0;
+            animation: pulseNumber var(--pulse-speed) infinite ease-in-out;
+            display: inline-block;
+        }
+        .count.pending { color: var(--secondary); }
+        .count.approved { color: var(--success); }
+
+        /* 5. البحث الأزرق */
+        .search-section {
+            max-width: 900px; margin: 40px auto; background: #eef6ff;
+            padding: 10px; border-radius: 25px; display: flex; gap: 15px;
+            border: 2px solid #d1e5ff; transition: 0.4s;
+        }
+        .search-section:focus-within {
+            transform: scale(1.02); background: white; border-color: var(--secondary);
+        }
+
+        .search-input { flex: 1; border: none; padding: 15px; font-size: 1.1rem; font-family: 'Cairo'; outline: none; background: transparent; }
+        .search-btn { background: var(--primary); color: white; border: none; padding: 0 40px; border-radius: 15px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; }
+
+        .fade-in { animation: fadeInUp 0.8s ease-out forwards; opacity: 0; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="header-banner">
+        <img src="/images/gold_long.png" alt="مصلحة الجمارك">
+    </div>
+
+    <div class="dashboard-container">
+        
+        <a href="/shipments/new" class="card fade-in" style="animation-delay: 0.1s;">
+       <img src="/images/tt.png" alt="إضافة حاوية" class="container-img">            <h3 style="font-weight: 800; margin-top: 10px;">إضافة شحنة جديدة</h3>
+            <p style="color: #64748b;"> نموذج الرفع الإلكتروني </p>
+        </a>
+
+        <a href="/shipments/archive" class="card fade-in" style="animation-delay: 0.2s;">
+            <h3 style="color: #475569;">إجمالي الأرشيف المعتمد</h3>
+            <div class="count approved" th:text="${approvedCount}">9</div>
+            <p style="color: #64748b;">سجلات الأرشفة الإلكترونية</p>
+        </a>
+
+        <a href="/shipments/pending" class="card fade-in" style="animation-delay: 0.3s;">
+            <h3 style="color: #475569;">شحنات قيد المراجعة</h3>
+            <div class="count pending" th:text="${pendingCount}">20</div>
+            <p style="color: #64748b;">اضغط للمعالجة والاعتماد الفوري</p>
+        </a>
+
+    </div>
+<!--
+    <div class="fade-in" style="text-align: center; margin-top: 50px; animation-delay: 0.4s;">
+        <h3 style="color: var(--primary); font-weight: 800;">🔍 البحث السريع عن شحنة</h3>
+        <form th:action="@{/search}" method="get" class="search-section">
+            <input type="text" name="keyword" class="search-input" placeholder="رقم الحاوية، اسم المخلص...">
+            <button type="submit" class="search-btn">بدء البحث</button>
+        </form>
+    </div>
+-->
+</body>
+</html>

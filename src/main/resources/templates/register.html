@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>إنشاء حساب جديد - مصلحة الجمارك</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* استبدل المسار بصورة الحاويات الخاصة بك */
+            background: url('/images/containers-bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .glass-card {
+            background: rgb(128, 128, 128);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            width: 400px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            text-align: center;
+            color: white;
+        }
+
+        h2 { margin-bottom: 30px; font-weight: 300; }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            outline: none;
+        }
+
+        input::placeholder { color: #ddd; }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 8px;
+            background: rgb(106, 106, 106); /* لون ذهبي يتناسب مع شعار الجمارك */
+            color: #1a1a1a;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover { background: rgb(0, 64, 128); transform: translateY(-2px); }
+
+        .error { color: #ff6b6b; margin-bottom: 15px; }
+        
+        .footer-link { margin-top: 15px; font-size: 14px; }
+        .footer-link a { color: rgb(0, 64, 128); text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="glass-card">
+    <h2>إنشاء حساب جديد</h2>
+    
+    <div th:if="${param.error}" class="error">اسم المستخدم موجود مسبقاً!</div>
+
+    <form th:action="@{/register}" method="post">
+        <input type="text" name="username" placeholder="اسم المستخدم" required>
+        <input type="password" name="password" placeholder="كلمة المرور" required>
+        <button type="submit">تسجيل الحساب</button>
+    </form>
+
+    <div class="footer-link">
+        لديك حساب بالفعل؟ <a href="/login">تسجيل الدخول</a>
+    </div>
+</div>
+
+</body>
+</html>

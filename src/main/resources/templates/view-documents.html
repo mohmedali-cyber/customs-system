@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>منظومة معاينة المستندات المتكاملة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #3b82f6; 
+            --danger: #ef4444; 
+            --dark: #0f172a; 
+            --glass: rgba(255, 255, 255, 0.1);
+            --gold: #d4af37;
+            --success: #10b981;
+        }
+
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background: var(--dark); 
+            color: white; 
+            margin: 0; 
+            padding: 20px; 
+            overflow-x: hidden; 
+        }
+
+        /* الهيدر المطور */
+        .title-container { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            margin-bottom: 40px; 
+            background: var(--glass); 
+            padding: 20px 40px; 
+            border-radius: 15px; 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .info-wrapper { display: flex; gap: 50px; align-items: flex-start; }
+        .info-box h2 { margin: 0; font-size: 1.1rem; color: #f8fafc; }
+        .info-box span { color: var(--primary); font-weight: bold; }
+
+        /* الختم */
+        .stamp {
+            border: 4px double var(--success);
+            color: var(--success);
+            padding: 5px 20px;
+            border-radius: 10px;
+            transform: rotate(-10deg); 
+            opacity: 0.9;
+            display: none; 
+            text-align: center;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+            line-height: 1.2;
+        }
+        .stamp .stamp-text { font-size: 1.4rem; font-weight: bold; display: block; margin-bottom: 2px; }
+        .stamp .stamp-date { font-size: 0.9rem; font-weight: normal; display: block; border-top: 1px solid var(--success); padding-top: 2px; }
+        .status-approved .stamp { display: block; }
+
+        /* السلايدر */
+        .slider-wrapper { position: relative; max-width: 1200px; margin: auto; padding: 0 50px; }
+        .images-container { 
+            background: #ffffff; padding: 25px; border-radius: 24px; display: flex; 
+            overflow-x: auto; gap: 20px; scroll-behavior: smooth; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+        }
+        .images-container::-webkit-scrollbar { height: 5px; }
+        .images-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        .img-card { display: inline-flex; flex-direction: column; align-items: center; flex: 0 0 auto; width: 190px; }
+        .img-card img { 
+            width: 100%; height: 220px; object-fit: cover; border-radius: 15px; 
+            cursor: pointer; transition: 0.4s; border: 1px solid #e2e8f0; 
+        }
+        .img-card img:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        .img-card p { margin-top: 15px; font-size: 13px; color: #1e293b; font-weight: 700; text-align: center; background: #f1f5f9; padding: 5px 12px; border-radius: 8px; width: 85%; }
+
+        .nav-btn { 
+            position: absolute; top: 50%; transform: translateY(-50%); width: 45px; height: 45px; 
+            background: white; border-radius: 50%; border: none; cursor: pointer; z-index: 10; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); font-size: 20px; display: flex; align-items: center; justify-content: center;
+        }
+        .nav-btn:hover { background: var(--primary); color: white; }
+        .left-btn { left: -10px; } .right-btn { right: -10px; }
+
+        /* المودال والتحكم */
+        /* تنسيق الحاوية الرئيسية للمودال */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    align-items: center;
+    justify-content: center;
+}
+
+/* تنسيق الأسهم (التنقل) */
+.modal-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.1); /* خلفية خفيفة جداً */
+    color: white;
+    border: none;
+    font-size: 40px;
+    font-weight: bold;
+    padding: 20px;
+    cursor: pointer;
+    border-radius: 50%; /* جعلها دائرية */
+    transition: 0.3s;
+    user-select: none;
+    z-index: 2100; /* التأكد أنها فوق الصورة */
+}
+
+.modal-nav:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #2563eb; /* يتغير للون الأزرق عند اللمس */
+}
+
+/* تحديد موقع السهم السابق على أقصى اليمين (بسبب RTL) */
+.modal-prev {
+    right: 30px; 
+}
+
+/* تحديد موقع السهم التالي على أقصى اليسار */
+.modal-next {
+    left: 30px;
+}
+
+/* ضمان عدم تداخل الصورة مع الأسهم */
+.modal-content {
+    max-width: 80%; /* تصغير عرض الصورة قليلاً لترك مساحة للأسهم */
+    max-height: 80vh;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    transition: transform 0.3s ease; /* لدعم الزوم */
+}
+        .zoom-controls { 
+            position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); 
+            display: flex; gap: 20px; background: rgba(255, 255, 255, 0.1); 
+            padding: 12px 30px; border-radius: 100px; backdrop-filter: blur(15px); 
+            z-index: 10001; border: 1px solid rgba(255,255,255,0.2);
+        }
+        .zoom-controls button { width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer; font-size: 20px; background: white; display: flex; align-items: center; justify-content: center; }
+
+        /* الأزرار والرجوع */
+        .action-container { text-align: center; margin-top: 50px; }
+        .btn { padding: 15px 35px; border-radius: 12px; cursor: pointer; font-weight: 700; text-decoration: none; border: none; font-size: 16px; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px; }
+        .btn-print { background: var(--primary); color: white; margin-left: 15px; }
+        
+        .back-fab {
+            position: fixed; bottom: 30px; left: 30px; background: #f8fafc; color: #0f172a;
+            width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; text-decoration: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            z-index: 1000; border: none; cursor: pointer;
+        }
+        .back-fab:hover { transform: scale(1.1) rotate(-10deg); background: var(--primary); color: white; }
+
+        .btn-back { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .btn-back:hover { background: #e2e8f0; color: #0f172a; }
+
+        @media print {
+            .nav-btn, .action-container, .zoom-controls, .close-btn, .modal-nav, .back-fab { display: none !important; }
+            body { background: white; color: black; }
+            .title-container { border: 2px solid #000; background: none !important; padding: 10px 20px; }
+        }
+   
+   .close-btn {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: white;
+    font-size: 45px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 3000; /* لضمان ظهوره فوق كل شيء */
+    transition: 0.3s;
+}
+
+.close-btn:hover {
+    color: #ef4444; /* يتغير للأحمر عند الوقوف عليه */
+    transform: scale(1.2);
+}
+    </style>
+
+ <style>
+/* زر تبديل العرض */
+.view-switcher {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.view-btn {
+    background: var(--glass);
+    border: 1px solid var(--primary);
+    color: white;
+    padding: 8px 20px;
+    cursor: pointer;
+    border-radius: 20px;
+    font-family: 'Cairo';
+    transition: 0.3s;
+}
+.view-btn.active {
+    background: var(--primary);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+}
+
+/* نمط القائمة العمودية (صور تحت بعض) */
+.images-container.list-mode {
+    display: flex;
+    flex-direction: column; /* ترتيب رأسي */
+    gap: 30px;
+    background: transparent;
+    padding: 20px;
+    overflow-x: hidden;
+}
+
+.list-mode .img-card {
+    width: 100%; /* تأخذ عرض الصفحة بالكامل */
+    max-width: 800px; /* تحديد عرض أقصى للصورة لراحة العين */
+    margin: 0 auto;
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.list-mode .img-card img {
+    width: 100%;
+    height: auto; /* الحفاظ على أبعاد الصورة الأصلية */
+    max-height: none; /* إلغاء تحديد الارتفاع */
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+.list-mode .img-card p {
+    width: 100%;
+    font-size: 1.2rem;
+    padding: 15px;
+    margin-top: 10px;
+    background: #f8fafc;
+    color: var(--dark);
+    border-right: 5px solid var(--primary); /* إضافة علامة جانبية */
+}
+
+/* إخفاء أزرار التنقل العرضية في وضع القائمة */
+.list-mode-active .nav-btn {
+    display: none !important;
+}
+
+ </style>
+</head>
+
+<body th:class="${shipment.status.name() == 'APPROVED' ? 'status-approved' : ''}">
+
+    <!-- زر الرجوع الذكي (العائم) -->
+    <button onclick="smartBack()" class="back-fab" title="رجوع ذكي">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+    </button>
+
+    <!-- الهيدر والبيانات الأساسية -->
+    <div class="title-container">
+        <div class="info-wrapper">
+            <div class="info-box">
+                <h2>👤 المخلص: <span th:text="${shipment.customsbroker}">...</span></h2>
+                <p dir="ltr" style="font-size: 0.85rem; color: #38bdf8; margin: 5px 0 0 0;">📞 <span th:text="${shipment.brokerPhone}">...</span></p>
+            </div>
+            <div class="info-box">
+                <h2>📑 الحاوية: <span th:text="${shipment.containerNumber}">...</span></h2>
+            </div>
+            <div class="info-box">
+                <h2>🔢 الرمز الإحصائي: <span th:text="${shipment.statisticalCode}">...</span></h2>
+                <p style="margin-top:5px; font-size: 0.9rem;">
+                    الحالة: <span th:text="${shipment.status.name() == 'APPROVED' ? 'معتمدة' : 'قيد المراجعة'}"
+                    th:style="${shipment.status.name() == 'APPROVED' ? 'color:#10b981' : 'color:#facc15'}"></span>
+                </p>
+            </div>
+        </div>
+     
+      <div class="stamp">
+         <span class="stamp-text">✅ تم الاعتماد</span>
+            <!-- جلب التاريخ المخزن في قاعدة البيانات وتنسيقه -->
+         <span class="stamp-date" th:text="${shipment.approvedAt != null ? #temporals.format(shipment.approvedAt, 'yyyy/MM/dd') : ''}"></span>
+      </div>
+   
+    </div>
+
+    <!-- أزرار تبديل وضع العرض (الجديد) -->
+<div class="view-switcher" style="text-align: center; margin: 20px 0;">
+    <button id="btnSlider" class="view-btn active" onclick="setView('slider')">🖼️ عرض السلايدر (عرضي)</button>
+    <button id="btnList" class="view-btn" onclick="setView('list')">📜 عرض القائمة (عمودي)</button>
+</div>
+    
+    <!-- حاوية الصور (تدعم الوضعين) -->
+    <div id="mainWrapper" class="slider-wrapper">
+        <button onclick="scrollSlider(-300)" class="nav-btn left-btn">❮</button>
+        
+        <div id="slider" class="images-container">
+            <div class="img-card" th:each="doc : ${shipment.documents}">
+                <img th:src="${doc.fileUrl}" onclick="openModal(this)">
+                <p th:text="${doc.type.name() == 'BILL_OF_LADING' ? 'بوليصة شحن' : 
+                              doc.type.name() == 'DELIVERY_ORDER' ? 'إذن تسليم' : 
+                              doc.type.name() == 'CERTIFICATE_OF_ORIGIN' ? 'شهادة منشأ' : 
+                              doc.type.name() == 'INVOICE' ? 'فاتورة' : 
+                              doc.type.name() == 'PACKING_LIST' ? 'قائمة تعبئة' : 
+                              doc.type.name() == 'AUTHORIZATION_LETTER' ? 'رسالة تخويل' : 
+                              doc.type.name() == 'CUSTOMS_DECLARATION' ? 'إقرار جمركي' : 
+                              doc.type.name() == 'BROKER_ID' ? 'هوية مخلص' : 
+                              doc.type.name() == 'STATISTICAL_IMAGE' ? 'رمز إحصائي' : 'مستند إضافي'}">
+                </p>
+            </div>
+        </div>
+
+        <button onclick="scrollSlider(300)" class="nav-btn right-btn">❯</button>
+    </div>
+
+    <!-- أزرار الإجراءات السفلى -->
+    <div class="action-container">
+        <button class="btn btn-print" onclick="window.print()">🖨️ طباعة الملف بالكامل</button>
+        <a th:href="@{/shipments}" class="btn btn-back">↩ عودة للقائمة</a>
+    </div>
+
+    <!-- المودال (مع الأسهم والزوم المحدثة) -->
+    <div id="imgModal" class="modal">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        
+        <button class="modal-nav modal-prev" onclick="changeImage(-1)">❮</button>
+        <img id="modalImg" class="modal-content">
+        <button class="modal-nav modal-next" onclick="changeImage(1)">❯</button>
+
+        <div class="zoom-controls">
+            <button onclick="zoomIn()">+</button>
+            <button onclick="zoomOut()">−</button>
+            <button onclick="rotateRight()">⟳</button>
+            <button onclick="resetZoom()">🔄</button>
+            <button onclick="printCurrentImage()">🖨️</button>
+        </div>
+    </div>
+
+    <script>
+        // دالة الرجوع الذكي للعائم
+        function smartBack() {
+            if (document.referrer !== "" && document.referrer.includes(window.location.hostname)) {
+                window.history.back();
+            } else {
+                window.location.href = '/shipments'; 
+            }
+        }
+
+        window.onload = () => {
+            const dateSpan = document.getElementById('currentStampDate');
+            dateSpan.innerText = new Date().toLocaleDateString('ar-LY', { year: 'numeric', month: '2-digit', day: '2-digit' });
+            allImages = Array.from(document.querySelectorAll('#slider img')).map(img => img.src);
+        };
+
+        let scale = 1, rotate = 0, currentIdx = 0;
+        let isDragging = false, startX, startY, translateX = 0, translateY = 0;
+        let allImages = [];
+
+        const modalImg = document.getElementById("modalImg");
+        const imgModal = document.getElementById("imgModal");
+
+        function openModal(imgElement) {
+            imgModal.style.display = "flex";
+            currentIdx = allImages.indexOf(imgElement.src);
+            updateView();
+        }
+
+        function closeModal() { imgModal.style.display = "none"; }
+        function updateView() { modalImg.src = allImages[currentIdx]; resetZoom(); }
+        function changeImage(step) { currentIdx = (currentIdx + step + allImages.length) % allImages.length; updateView(); }
+        function apply() { modalImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale}) rotate(${rotate}deg)`; }
+        
+        function zoomIn() { if (scale < 5) { scale += 0.3; apply(); } }
+        function zoomOut() { if (scale > 0.3) { scale -= 0.3; apply(); } }
+        function rotateRight() { rotate += 90; apply(); }
+        function resetZoom() { scale = 1; rotate = 0; translateX = 0; translateY = 0; apply(); }
+
+        function printCurrentImage() {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`<html><head><title>طباعة</title><style>body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;}img{max-width:100%;max-height:100%;object-fit:contain;}</style></head><body><img src="${modalImg.src}" onload="window.print();window.close();"></body></html>`);
+            printWindow.document.close();
+        }
+
+        modalImg.onmousedown = (e) => { if(scale === 1) return; isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY; };
+        window.onmousemove = (e) => { if (!isDragging) return; translateX = e.clientX - startX; translateY = e.clientY - startY; apply(); };
+        window.onmouseup = () => { isDragging = false; };
+        imgModal.onwheel = (e) => { e.preventDefault(); e.deltaY < 0 ? zoomIn() : zoomOut(); };
+
+        window.onkeydown = (e) => {
+            if (imgModal.style.display === "flex") {
+                if (e.key === "Escape") closeModal();
+                if (e.key === "ArrowRight") changeImage(-1);
+                if (e.key === "ArrowLeft") changeImage(1);
+            }
+        };
+
+        function scrollSlider(amt) { document.getElementById('slider').scrollBy({ left: amt, behavior: 'smooth' }); }
+    </script>
+
+
+
+<script>
+
+function setView(mode) {
+    const slider = document.getElementById('slider');
+    const wrapper = document.getElementById('mainWrapper');
+    const btnSlider = document.getElementById('btnSlider');
+    const btnList = document.getElementById('btnList');
+
+    if (mode === 'list') {
+        slider.classList.add('list-mode');
+        wrapper.classList.add('list-mode-active');
+        btnList.classList.add('active');
+        btnSlider.classList.remove('active');
+        // تمرير الصفحة للأعلى عند التبديل
+        window.scrollTo({ top: wrapper.offsetTop - 50, behavior: 'smooth' });
+    } else {
+        slider.classList.remove('list-mode');
+        wrapper.classList.remove('list-mode-active');
+        btnSlider.classList.add('active');
+        btnList.classList.remove('active');
+    }
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+    
+    <title>إضافة شحنة جديدة - منظومة الجمارك</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
+    <style>
+        :root { --primary: rgb(0, 0, 113); --success: #10b981; --danger: #ef4444; --dark: #1e3a8a; }
+        body { font-family: 'Cairo', sans-serif; background: linear-gradient(135deg, rgb(0, 0, 0) 0%, #c3dafe 100%); padding: 20px; direction: rtl; min-height: 100vh; margin: 0; }
+        .main-container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
+        .title-messiri { text-align: center; color: var(--dark); border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-bottom: 30px; font-size: 24px; }
+
+        /* الكروت */
+        .form-group { margin-bottom: 15px; padding: 15px; border: 2px solid rgb(0, 124, 185); border-radius: 12px; background: #ffffff; transition: 0.3s; }
+        .form-group:hover { border-color: var(--primary); }
+        .card-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .form-group label { font-weight: bold; color: var(--dark); font-size: 14px; }
+        
+        .file-badge { background: var(--primary); color: white; padding: 2px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .file-badge.active { background: var(--success); }
+
+        /* منطقة الرفع */
+        .dynamic-upload-section { margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 10px; }
+        .add-slot-btn { background: #f0f9ff; color: rgb(40, 40, 40); border: 1px dashed rgb(0, 0, 0); padding: 8px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px; font-size: 12px; }
+        
+        .upload-row { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 8px; border-radius: 8px; margin-bottom: 5px; border: 1px solid #e2e8f0; }
+        .upload-row input[type="file"] { flex: 1; font-size: 12px; margin: 0 10px; }
+        .btn-del-row { color: var(--danger); border: none; background: none; cursor: pointer; font-weight: bold; font-size: 18px; }
+
+        /* الرقم داخل الصف */
+        .row-number { background: var(--primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+
+        .preview-grid { display: none; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 10px; padding: 10px; background: #f1f5f9; border-radius: 8px; }
+        .preview-grid img { width: 100%; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid var(--primary); }
+
+        .btn-view { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; display: none; margin-top: 5px; font-family: 'Cairo'; font-weight: bold; }
+
+        /* التنقل */
+        .pagination { display: flex; justify-content: center; gap: 15px; margin: 30px 0; }
+        .pagination button { background: #e0e7ff; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: bold; color: #3730a3; font-family: 'Cairo'; transition: 0.3s; }
+        .pagination button.active { background: var(--dark); color: white; }
+
+        .save-btn { width: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 18px; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; font-family: 'Cairo'; }
+        
+        .page { display: none; }
+        .active-page { display: block !important; }
+        
+        input[type="text"], input[type="tel"] { width: 100%; padding: 12px; border: 1px solid #cfd8ff; border-radius: 8px; box-sizing: border-box; font-family: 'Cairo'; }
+    </style>
+ <style>
+.page { display: none; animation: fadeIn 0.4s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+ </style>
+
+<style>
+.spinner {
+    width: 18px;
+    height: 18px;
+    border: 3px solid #e5e7eb;
+    border-top: 3px solid #10b981;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+</style>
+<style>
+.img-card p {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #1e293b; /* أسود كربوني */
+    font-weight: 700;
+    text-align: center;
+    border-bottom: 1px solid #e2e8f0; /* خط خفيف جداً */
+    padding-bottom: 5px;
+    min-width: 120px;
+}
+
+</style>
+
+<style>
+/* Lightbox Overlay */
+.lightbox-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 10000;
+}
+
+.lightbox-img {
+    max-width: 90%;
+    max-height: 85%;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    transition: transform 0.3s ease;
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 20px; right: 30px;
+    color: white; font-size: 40px; cursor: pointer;
+}
+
+.lightbox-nav {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    color: white; font-size: 50px; cursor: pointer;
+    background: rgba(255,255,255,0.1);
+    padding: 10px; border-radius: 50%;
+    user-select: none;
+}
+
+.lightbox-prev { left: 20px; }
+.lightbox-next { right: 20px; }
+
+.lightbox-nav:hover { background: rgba(255,255,255,0.3); }
+
+/* تحسين شكل الصور في الشبكة لتكون قابلة للضغط */
+.preview-grid img {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.preview-grid img:hover { opacity: 0.8; }
+</style>
+
+<style>
+.preview-item {
+    position: relative;
+    display: inline-block;
+}
+
+.delete-photo-btn {
+    position: absolute;
+    top: -5px;
+    left: -5px; /* وضعناه جهة اليسار ليميز عن رقم الصورة */
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.delete-photo-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+</style>
+<style>
+.save-btn-container {
+    display: flex;
+    justify-content: center; /* التوسيط الأفقي */
+    align-items: center;
+    margin: 40px 0;
+    width: 100%;
+}
+
+.save-btn {
+    display: none; /* سيتم إظهاره عبر JS */
+    width: 280px; /* عرض ثابت وأنيق */
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: 700;
+    font-family: 'Cairo', sans-serif;
+    color: #ffffff;
+    
+    /* تدرج لوني فخم (أزرق ملكي إلى كحلي عميق) */
+    background: linear-gradient(135deg, rgb(0, 128, 192) 0%, #334155 100%);
+    
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50px; /* حواف دائرية كاملة تعطي فخامة */
+    cursor: pointer;
+    
+    /* ظل ناعم جداً وعميق */
+    box-shadow: 0 30px 25px rgba(0, 0, 0, 0.2);
+    
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    outline: none;
+}
+
+/* تأثير التمرير (Hover) */
+.save-btn:hover {
+    transform: translateY(-5px); /* يرتفع قليلاً */
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); /* يتغير للون أفتح */
+    box-shadow: 0 15px 35px rgba(59, 130, 246, 0.3);
+    letter-spacing: 2px;
+}
+
+/* تأثير الضغط */
+.save-btn:active {
+    transform: scale(0.95);
+}
+</style>
+<style>
+#cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+    gap: 20px;
+    /* إضافة هذه الأسطر */
+    justify-content: center; /* توسيط الكروت في المساحات الواسعة */
+    align-items: start;      /* منع الكروت من التمدد طولياً بشكل غير متساوي */
+    padding: 10px;           /* مسافة أمان عن حواف الصفحة */
+}
+
+.form-group {
+    background: rgb(218, 218, 218);
+    backdrop-filter: blur(10px); /* تنعيم ما خلف الكارد */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+</style>
+<style>
+.halo-logo {
+    display: block;
+    width: 310px;
+    margin: auto; /* للتوسيط */
+    
+    /* إضافة ظل خلفي ناعم جداً على شكل هالة */
+    filter: drop-shadow(0 0 5px rgba(218, 165, 32, 0.3)); /* لون ذهبي باهت */
+    
+    /* حركة التلاشي والظهور الهادئة جداً */
+    animation: haloGlow 8s ease-in-out infinite;
+}
+
+@keyframes haloGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 5px rgba(218, 165, 32, 0.3));
+    }
+    60% {
+        filter: drop-shadow(0 0 15px rgba(218, 165, 32, 0.6)); /* يزداد التوهج */
+    }
+}
+.gold-shine {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.gold-shine::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        120deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.6), 
+        transparent
+    );
+    transition: all 0.6s;
+}
+
+/* يتحرك الوميض عند مرور الماوس أو تلقائياً كل فترة */
+.gold-shine:hover::before {
+    left: 150%;
+    transition: 0.8s;
+}
+.luxury-float {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));
+}
+
+.luxury-float:hover {
+    transform: translateY(-8px); /* ارتفاع بسيط */
+    filter: drop-shadow(0 20px 30px rgba(184, 134, 11, 0.3)); /* ظل ذهبي دافئ */
+}
+
+</style>
+<style>
+/* تأثير الكاردات الاحترافي */
+.form-group {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* حركة الرفع الهادئة عند مرور الماوس */
+.form-group:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border-color: #3b82f6; /* لون أزرق خفيف للإطار */
+}
+
+/* تأثير "التركيز" لما المستخدم يبدأ يكتب */
+.form-group:focus-within {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+</style>
+
+<style>
+/* تعريف حركة الوهج والقوة */
+@keyframes strongPulse {
+    0% { transform: scale(1); filter: brightness(1); }
+    50% { 
+        transform: scale(1.02); /* تكبير خفيف */
+        filter: brightness(1.2) drop-shadow(0 0 15px rgba(59, 130, 246, 0.6)); /* وهج أزرق قوي */
+    }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* الكلاس الذي سيتم تفعيله كل دقيقة */
+.activate-pulse {
+    animation: strongPulse 1.5s ease-in-out; /* الحركة تستمر ثانية ونصف */
+}
+</style>
+<style>
+/* تأثير الضل للكاردات */
+.form-group {
+    background: #ffffff;
+    border-radius: 15px; /* حواف دائرية ناعمة */
+    padding: 20px;
+    border: 1px solid #f1f5f9; /* إطار خفيف جداً */
+    
+    /* الضل الأساسي: ناعم وغير تقيل */
+    box-shadow: 0 9px 6px -1px rgba(0, 0, 0, 0.05), 
+                0 5px 4px -1px rgba(0, 0, 0, 0.03);
+    
+    transition: all 0.3s ease; /* عشان الحركة تكون ناعمة */
+}
+
+/* تأثير الضل عند مرور الماوس (Hover) */
+.form-group:hover {
+    /* ضل أقوى شوية بيدي إحساس إن الكارد قرب من عينك */
+    box-shadow: 0 20px 25px -7px rgba(0, 0, 0, 0.1), 
+                0 10px 10px -7px rgba(0, 0, 0, 0.04);
+    
+    transform: translateY(-6px); /* رفعة بسيطة للفوق */
+    border-color: #3b82f6; /* تغيير لون الإطار للأزرق */
+}
+</style>
+</head>
+<body>
+
+<center>
+<div class="logo-container">
+    <div class="luxury-logo">
+<img th:src="@{/images/gold_long.png}" class="halo-logo" /></div>
+</center>
+
+ <br>
+
+
+<div class="main-container">
+    <h2 class="title-messiri" id="mainTitle">إضافة بيانات الشحنة</h2>
+    
+  
+<form id="mainForm" th:action="@{/shipments/save}" th:object="${shipment}" method="post" enctype="multipart/form-data">        
+        <div id="page1" class="page active-page">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+   <div class="form-group">
+          <label> المخلص الجمركي:</label>
+          <input type="text" th:field="*{customsbroker}" id="brokerInput" required placeholder="اسم المخلص او المخول">
+   </div>
+   <div class="form-group">
+         <label>📞 هاتف المخلص:</label>
+         <input type="tel" 
+             th:field="*{brokerPhone}" 
+             id="phoneInput" 
+             maxlength="10" 
+             oninput="this.value = this.value.replace(/[^0-9]/g, '')" 
+             placeholder="رقم الهاتف"
+             required>
+     </div>
+                <div class="form-group"><label> رقم الحاوية:</label><input type="text" th:field="*{containerNumber}" placeholder="رقم الحاوية:"></div>
+                <div class="form-group"><label> الرمز الإحصائي:</label><input type="text" th:field="*{statisticalCode}" placeholder="االرمز الإحصائي:"></div>
+                <div class="form-group" style="grid-column: span 2;"><label>📅 تاريخ التسجيل:</label><input type="text" id="createdAtInput" name="createdAtStr" ></div>
+            </div>
+        </div>
+
+        <div id="page2" class="page">
+            <div id="cards-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                </div>
+        </div>
+
+        <div class="pagination">
+            <button type="button" onclick="showPage(1)" id="btn1" class="active">1 - البيانات</button>
+            <button type="button" onclick="showPage(2)" id="btn2">2 - المستندات</button>
+        </div>
+
+<div class="save-btn-container">
+    <button type="button" id="finalSaveBtn" class="save-btn" onclick="validateAndSave()">
+        <span> حفظ  </span>
+    </button>
+</div>    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+/* =========================
+   1. أنواع المستندات
+========================= */
+const docTypes = [
+    {id: 'BOL', title: 'بوليصة شحن'},
+    {id: 'DO', title: 'إذن تسليم'},
+    {id: 'OC', title: 'شهادة منشأ'},
+    {id: 'INV', title: 'فاتورة'},
+    {id: 'PL', title: 'قائمة تعبئة'},
+    {id: 'AL', title: 'رسالة تخويل'},
+    {id: 'CD', title: 'إقرار جمركي'},
+    {id: 'BI', title: 'هوية المخلص'},
+    {id: 'SI', title: 'رمز إحصائي'}
+];
+
+/* =========================
+   2. التاريخ
+========================= */
+flatpickr("#createdAtInput", {
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d/m/Y",
+    defaultDate: "today"
+});
+
+/* =========================
+   3. التنقل بين الصفحات
+========================= */
+function showPage(num) {
+    // 1. التنقل بين الصفحات (الكود القديم بتاعك)
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+    document.querySelectorAll('.pagination button').forEach(b => b.classList.remove('active'));
+
+    document.getElementById("page" + num).classList.add("active-page");
+    document.getElementById("btn" + num).classList.add("active");
+
+    // 2. تحديث العنوان بناءً على رقم الصفحة
+    const mainTitle = document.getElementById('mainTitle');
+    if (num === 1) {
+        mainTitle.textContent = "إضافة بيانات الشحنة";
+    } else {
+        mainTitle.textContent = "إضافة مستندات الشحنة";
+    }
+
+    // 3. التحكم في ظهور زر الحفظ (الكود القديم بتاعك)
+    const saveBtn = document.getElementById('finalSaveBtn');
+    if (num === 2) {
+        saveBtn.style.display = 'block'; 
+    } else {
+        saveBtn.style.display = 'none';  
+    }
+}
+
+/* =========================
+   4. بناء الكروت
+========================= */
+const cardsContainer = document.getElementById('cards-container');
+docTypes.forEach(doc => {
+    cardsContainer.insertAdjacentHTML('beforeend', `
+        <div class="form-group">
+            <div class="card-header-flex">
+                <label>${doc.title}</label>
+                <span id="badge-${doc.id}" class="file-badge">0 / 5</span>
+            </div>
+            <div class="dynamic-upload-section">
+                <button type="button" class="add-slot-btn" onclick="addUploadRow('${doc.id}')">➕ إضافة مستند</button>
+                <div id="container-${doc.id}"></div>
+                <button type="button" id="btn-view-${doc.id}" class="btn-view" onclick="toggleGrid('${doc.id}')"> عرض المستندات</button>
+                <div id="grid-${doc.id}" class="preview-grid"></div>
+            </div>
+        </div>
+    `);
+});
+
+/* =========================
+   5. إضافة وحذف وملفات
+========================= */
+function addUploadRow(type) {
+    const container = document.getElementById(`container-${type}`);
+    const count = container.querySelectorAll('.upload-row').length;
+    if (count >= 5) { alert("الحد الأقصى 5 صور"); return; }
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = 'image/*'; input.name = `${type}_files`; input.style.display = 'none';
+    const rowId = `row-${type}-${Date.now()}`;
+    input.onchange = async function () {
+        if (!this.files || !this.files[0]) return;
+        container.insertAdjacentHTML('beforeend', `<div class="upload-row" id="${rowId}"><span class="row-number">${count + 1}</span><button type="button" onclick="removeRow('${type}','${rowId}')">✕</button></div>`);
+        document.getElementById(rowId).appendChild(this);
+        await handleSelection(type, rowId);
+    };
+    input.click();
+}
+
+function removeRow(type, rowId) {
+    document.getElementById(rowId)?.remove();
+    reorder(type);
+    refresh(type);
+}
+
+function reorder(type) {
+    document.querySelectorAll(`#container-${type} .upload-row`).forEach((r, i) => {
+        const num = r.querySelector('.row-number');
+        if (num) num.textContent = i + 1;
+    });
+    updateBadge(type);
+}
+
+function refresh(type) {
+    const grid = document.getElementById(`grid-${type}`);
+    const btn = document.getElementById(`btn-view-${type}`);
+    const container = document.getElementById(`container-${type}`);
+    const rows = Array.from(container.querySelectorAll('.upload-row'));
+    grid.innerHTML = "";
+    rows.forEach((row, index) => {
+        const input = row.querySelector('input[type="file"]');
+        if (!input || !input.files?.[0]) return;
+        const reader = new FileReader();
+        const rowId = row.id;
+        reader.onload = e => {
+            grid.insertAdjacentHTML('beforeend', `<div class="preview-item" id="preview-${rowId}"><button type="button" class="delete-photo-btn" onclick="removeRow('${type}', '${rowId}')">✕</button><img src="${e.target.result}" onclick="openLightbox('${type}', ${index})"><span style="position:absolute;bottom:5px;right:5px;background:#3b82f6;color:#fff;padding:2px 6px;border-radius:4px;font-size:12px">${index + 1}</span></div>`);
+        };
+        reader.readAsDataURL(input.files[0]);
+    });
+    btn.style.display = rows.length ? "block" : "none";
+    updateBadge(type, rows.length);
+}
+
+function updateBadge(type, count = null) {
+    const badge = document.getElementById(`badge-${type}`);
+    const total = count ?? document.querySelectorAll(`#container-${type} input[type="file"]`).length;
+    badge.textContent = `${total} / 5`;
+    badge.classList.toggle("active", total > 0);
+}
+
+function toggleGrid(type) {
+    const grid = document.getElementById(`grid-${type}`);
+    grid.style.display = grid.style.display === "grid" ? "none" : "grid";
+}
+
+/* =========================
+   11. التحقق + الحفظ + التنبيه بالشعار
+========================= */
+async function validateAndSave() {
+    const broker = document.getElementById('brokerInput');
+    const phone = document.getElementById('phoneInput');
+    const container = document.querySelector('[name="containerNumber"]');
+    const statistical = document.querySelector('[name="statisticalCode"]');
+    const form = document.getElementById('mainForm');
+    const btn = document.getElementById('finalSaveBtn');
+
+    const fields = [
+        { element: broker, name: "اسم المخلص" },
+        { element: phone, name: "رقم الهاتف" },
+        { element: container, name: "رقم الحاوية" },
+        { element: statistical, name: "الرمز الإحصائي" }
+    ];
+
+    let missingInfo = [];
+    fields.forEach(f => {
+        if (!f.element || f.element.value.trim() === "") {
+            if (f.element) f.element.style.cssText = "border: 2px solid red !important; background-color: #fff5f5;";
+            missingInfo.push(f.name);
+        } else {
+            if (f.element) f.element.style.cssText = "border: 1px solid #cfd8ff !important; background-color: white;";
+        }
+    });
+
+    if (missingInfo.length > 0) {
+        showPage(1);
+        showToast("⚠️  يرجى كتابة البيانات: " + missingInfo.join(' و '), "error");
+        return;
+    }
+
+    // --- التعديل الجديد: التحقق من طول رقم الهاتف (10 أرقام بالضبط) ---
+    const phoneValue = phone.value.trim();
+    if (phoneValue.length !== 10) {
+        phone.style.cssText = "border: 2px solid red !important; background-color: #fff5f5;";
+        showPage(1);
+        showToast("⚠️ رقم الهاتف يجب أن يكون 10 أرقام بالضبط", "error");
+        return;
+    }
+    // -----------------------------------------------------------
+
+    let missingDocs = [];
+    docTypes.forEach(doc => {
+        const filesCount = document.getElementById(`container-${doc.id}`)?.querySelectorAll('.upload-row').length || 0;
+        if (filesCount === 0) missingDocs.push(doc.title);
+    });
+
+    if (missingDocs.length > 0) {
+        showPage(2);
+        showToast("⚠️ ارفع مستند في: " + missingDocs[0], "error");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = `<span>⏳ جاري الحفظ...</span>`;
+
+    try {
+        const formData = new FormData(form);
+        const res = await fetch(form.action, { method: "POST", body: formData });
+        if (res.ok) {
+            showToast("✅ تم الحفظ بنجاح", "success");
+            setTimeout(() => location.reload(), 2000);
+        } else { throw new Error(); }
+    } catch (err) {
+        showToast("❌ فشل الاتصال بالسيرفر", "error");
+        btn.disabled = false;
+        btn.innerHTML = "💾 حفظ الشحنة والأرشيف";
+    }
+}
+
+// دالة التنبيه المعتمدة بالشعار (120px)
+function showToast(message, type = "success") {
+    const overlay = document.createElement("div");
+    overlay.style.cssText = `position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:10000; opacity:0; transition:0.3s;`;
+    
+    const box = document.createElement("div");
+    const logoUrl = "/images/im.png?v=" + new Date().getTime();
+
+    box.innerHTML = `
+        <div style="margin-bottom:15px;"><img src="${logoUrl}" style="width:120px; height:auto; display:block; margin:0 auto;"></div>
+        <div style="font-size:30px; margin-bottom:10px;">${type === "success" ? "✅" : "❌"}</div>
+        <div style="font-size:18px; font-weight:bold; font-family:'Cairo'; color:#1e293b;">${message}</div>
+    `;
+
+    box.style.cssText = `background:white; padding:30px 45px; border-radius:20px; text-align:center; box-shadow:0 20px 40px rgba(0,0,0,0.3); transform:scale(0.8); transition:0.3s; max-width:400px; border-top:6px solid ${type === "success" ? "#10b981" : "#ef4444"};`;
+
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    setTimeout(() => { overlay.style.opacity = "1"; box.style.transform = "scale(1)"; }, 50);
+    setTimeout(() => { overlay.style.opacity = "0"; box.style.transform = "scale(0.8)"; setTimeout(() => overlay.remove(), 300); }, 3000);
+}
+
+/* =========================
+   12. تنظيف الصور والضغط واللايت بوكس
+========================= */
+window.addEventListener("load", () => {
+    if (sessionStorage.getItem("resetForm") === "1") {
+        sessionStorage.removeItem("resetForm");
+        resetAllForms();
+    }
+});
+
+async function handleSelection(type, rowId) {
+    const row = document.getElementById(rowId);
+    const input = row.querySelector("input[type=file]");
+    if (!input.files[0]) return;
+    try {
+        const compressed = await imageCompression(input.files[0], { maxSizeMB: 0.5, maxWidthOrHeight: 1200 });
+        const dt = new DataTransfer();
+        dt.items.add(new File([compressed], input.files[0].name, { type: input.files[0].type }));
+        input.files = dt.files;
+        row.style.display = "none";
+        refresh(type);
+    } catch (e) { row.style.display = "none"; refresh(type); }
+}
+
+function resetAllForms() {
+    document.querySelector("form").reset();
+    document.querySelectorAll(".upload-row").forEach(e => e.remove());
+    document.querySelectorAll(".preview-grid").forEach(g => g.innerHTML = "");
+    document.querySelectorAll(".file-badge").forEach(b => { b.textContent = "0 / 5"; b.classList.remove("active"); });
+    document.querySelectorAll(".btn-view").forEach(b => b.style.display = "none");
+}
+
+let currentImages = []; let currentIndex = 0;
+function openLightbox(type, index) {
+    currentImages = Array.from(document.getElementById(`grid-${type}`).querySelectorAll('img')).map(img => img.src);
+    currentIndex = index;
+    updateLightboxImage();
+    document.getElementById('lightbox').style.display = 'flex';
+}
+function updateLightboxImage() { document.getElementById('lightbox-img').src = currentImages[currentIndex]; }
+function changeImage(step, event) { event.stopPropagation(); currentIndex += step; if (currentIndex >= currentImages.length) currentIndex = 0; if (currentIndex < 0) currentIndex = currentImages.length - 1; updateLightboxImage(); }
+function closeLightbox(event) { if (event.target.id === 'lightbox') document.getElementById('lightbox').style.display = 'none'; }
+</script>
+<div id="lightbox" class="lightbox-overlay" onclick="closeLightbox(event)">
+    <span class="lightbox-close" onclick="document.getElementById('lightbox').style.display='none'">&times;</span>
+    <span class="lightbox-nav lightbox-prev" onclick="changeImage(-1, event)">&#10094;</span>
+    <img id="lightbox-img" class="lightbox-img" src="" alt="">
+    <span class="lightbox-nav lightbox-next" onclick="changeImage(1, event)">&#10095;</span>
+</div>
+</body>
+<script>
+// دالة لتشغيل الحركة القوية كل دقيقة
+function triggerStrongAnimation() {
+    const mainTitle = document.getElementById('mainTitle'); // سنطبقها على العنوان
+    
+    if (mainTitle) {
+        // إضافة الكلاس لتشغيل الحركة
+        mainTitle.classList.add('activate-pulse');
+        
+        // إزالة الكلاس بعد انتهاء الحركة (بعد 1.5 ثانية) عشان نقدر نشغلها تاني
+        setTimeout(() => {
+            mainTitle.classList.remove('activate-pulse');
+        }, 1500);
+    }
+}
+
+// ضبط العداد ليشتغل كل 60,000 مللي ثانية (دقيقة واحدة)
+setInterval(triggerStrongAnimation, 13000);
+
+// تشغيلها مرة واحدة فور تحميل الصفحة كـ "ترحيب"
+window.addEventListener('load', () => {
+    setTimeout(triggerStrongAnimation, 1000); 
+});
+</script>
+</html>
