@@ -1,10 +1,21 @@
-# المرحلة الأولى: بناء المشروع باستخدام Maven
-FROM maven:3.8.4-openjdk-17 AS build
-COPY . .
-RUN mvn clean package -DskipTests
+# ===============================
+# Dockerfile لمنظومة جمارك بنغازي
+# ===============================
 
-# المرحلة الثانية: تشغيل المشروع
-FROM openjdk:17-jdk-slim
-COPY --from=build /target/*.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# 1️⃣ استخدم نفس الصورة الناجحة من مشروعك السابق
+FROM eclipse-temurin:17-jdk-jammy
+
+# 2️⃣ مجلد العمل داخل الحاوية
+WORKDIR /app
+
+# 3️⃣ انسخ كل ملفات المشروع داخل الحاوية
+COPY . .
+
+# 4️⃣ أعطِ صلاحيات تنفيذ لـ Maven Wrapper (ضروري لنجاح البناء)
+RUN chmod +x mvnw
+
+# 5️⃣ بناء المشروع وتخطي الاختبارات لسرعة التنفيذ
+RUN ./mvnw clean package -DskipTests
+
+# 6️⃣ تشغيل التطبيق بناءً علىartifactId و version في ملف pom.xml
+CMD ["java", "-jar", "target/customs-system-0.0.1-SNAPSHOT.jar"]
