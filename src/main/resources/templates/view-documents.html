@@ -58,19 +58,23 @@
         .stamp .stamp-date { font-size: 0.9rem; font-weight: normal; display: block; border-top: 1px solid var(--success); padding-top: 2px; }
         .status-approved .stamp { display: block; }
 
-        /* السلايدر */
+        /* السلايدر - تم تعديله لإصلاح الصور المكسورة */
         .slider-wrapper { position: relative; max-width: 1200px; margin: auto; padding: 0 50px; }
         .images-container { 
             background: #ffffff; padding: 25px; border-radius: 24px; display: flex; 
             overflow-x: auto; gap: 20px; scroll-behavior: smooth; 
             box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            align-items: flex-start;
         }
-        .images-container::-webkit-scrollbar { height: 5px; }
+        .images-container::-webkit-scrollbar { height: 8px; }
         .images-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        .img-card { display: inline-flex; flex-direction: column; align-items: center; flex: 0 0 auto; width: 190px; }
+        .img-card { display: inline-flex; flex-direction: column; align-items: center; flex: 0 0 auto; width: 200px; }
         .img-card img { 
-            width: 100%; height: 220px; object-fit: cover; border-radius: 15px; 
+            width: 100%; height: 260px; /* زيادة الارتفاع قليلاً */
+            object-fit: contain; /* تم التغيير من cover إلى contain لإصلاح الصور */
+            background: #f1f5f9;
+            border-radius: 15px; 
             cursor: pointer; transition: 0.4s; border: 1px solid #e2e8f0; 
         }
         .img-card img:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
@@ -85,61 +89,52 @@
         .left-btn { left: -10px; } .right-btn { right: -10px; }
 
         /* المودال والتحكم */
-        /* تنسيق الحاوية الرئيسية للمودال */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 2000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.9);
-    align-items: center;
-    justify-content: center;
-}
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            align-items: center;
+            justify-content: center;
+        }
 
-/* تنسيق الأسهم (التنقل) */
-.modal-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.1); /* خلفية خفيفة جداً */
-    color: white;
-    border: none;
-    font-size: 40px;
-    font-weight: bold;
-    padding: 20px;
-    cursor: pointer;
-    border-radius: 50%; /* جعلها دائرية */
-    transition: 0.3s;
-    user-select: none;
-    z-index: 2100; /* التأكد أنها فوق الصورة */
-}
+        .modal-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            font-size: 40px;
+            font-weight: bold;
+            padding: 20px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: 0.3s;
+            user-select: none;
+            z-index: 2100;
+        }
 
-.modal-nav:hover {
-    background: rgba(255, 255, 255, 0.3);
-    color: #2563eb; /* يتغير للون الأزرق عند اللمس */
-}
+        .modal-nav:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: #2563eb;
+        }
 
-/* تحديد موقع السهم السابق على أقصى اليمين (بسبب RTL) */
-.modal-prev {
-    right: 30px; 
-}
+        .modal-prev { right: 30px; }
+        .modal-next { left: 30px; }
 
-/* تحديد موقع السهم التالي على أقصى اليسار */
-.modal-next {
-    left: 30px;
-}
+        .modal-content {
+            max-width: 80%;
+            max-height: 80vh;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
+        }
 
-/* ضمان عدم تداخل الصورة مع الأسهم */
-.modal-content {
-    max-width: 80%; /* تصغير عرض الصورة قليلاً لترك مساحة للأسهم */
-    max-height: 80vh;
-    border-radius: 8px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    transition: transform 0.3s ease; /* لدعم الزوم */
-}
         .zoom-controls { 
             position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); 
             display: flex; gap: 20px; background: rgba(255, 255, 255, 0.1); 
@@ -148,7 +143,6 @@
         }
         .zoom-controls button { width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer; font-size: 20px; background: white; display: flex; align-items: center; justify-content: center; }
 
-        /* الأزرار والرجوع */
         .action-container { text-align: center; margin-top: 50px; }
         .btn { padding: 15px 35px; border-radius: 12px; cursor: pointer; font-weight: 700; text-decoration: none; border: none; font-size: 16px; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px; }
         .btn-print { background: var(--primary); color: white; margin-left: 15px; }
@@ -165,99 +159,98 @@
         .btn-back:hover { background: #e2e8f0; color: #0f172a; }
 
         @media print {
-            .nav-btn, .action-container, .zoom-controls, .close-btn, .modal-nav, .back-fab { display: none !important; }
+            .nav-btn, .action-container, .zoom-controls, .close-btn, .modal-nav, .back-fab, .view-switcher { display: none !important; }
             body { background: white; color: black; }
             .title-container { border: 2px solid #000; background: none !important; padding: 10px 20px; }
+            .images-container { display: block !important; background: none !important; box-shadow: none !important; }
+            .img-card { page-break-inside: avoid; margin-bottom: 20px; width: 100%; }
+            .img-card img { height: auto !important; width: 100% !important; object-fit: contain !important; }
         }
    
-   .close-btn {
-    position: absolute;
-    top: 20px;
-    right: 30px;
-    color: white;
-    font-size: 45px;
-    font-weight: bold;
-    cursor: pointer;
-    z-index: 3000; /* لضمان ظهوره فوق كل شيء */
-    transition: 0.3s;
-}
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 45px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 3000;
+            transition: 0.3s;
+        }
 
-.close-btn:hover {
-    color: #ef4444; /* يتغير للأحمر عند الوقوف عليه */
-    transform: scale(1.2);
-}
+        .close-btn:hover {
+            color: #ef4444;
+            transform: scale(1.2);
+        }
+
+        /* زر تبديل العرض */
+        .view-switcher {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .view-btn {
+            background: var(--glass);
+            border: 1px solid var(--primary);
+            color: white;
+            padding: 8px 20px;
+            cursor: pointer;
+            border-radius: 20px;
+            font-family: 'Cairo';
+            transition: 0.3s;
+            margin: 0 5px;
+        }
+        .view-btn.active {
+            background: var(--primary);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+
+        /* نمط القائمة العمودية */
+        .images-container.list-mode {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            background: transparent;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .list-mode .img-card {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .list-mode .img-card img {
+            width: 100%;
+            height: auto;
+            max-height: none;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+
+        .list-mode .img-card p {
+            width: 100%;
+            font-size: 1.2rem;
+            padding: 15px;
+            margin-top: 10px;
+            background: #f8fafc;
+            color: var(--dark);
+            border-right: 5px solid var(--primary);
+        }
+
+        .list-mode-active .nav-btn {
+            display: none !important;
+        }
     </style>
-
- <style>
-/* زر تبديل العرض */
-.view-switcher {
-    text-align: center;
-    margin-bottom: 20px;
-}
-.view-btn {
-    background: var(--glass);
-    border: 1px solid var(--primary);
-    color: white;
-    padding: 8px 20px;
-    cursor: pointer;
-    border-radius: 20px;
-    font-family: 'Cairo';
-    transition: 0.3s;
-}
-.view-btn.active {
-    background: var(--primary);
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-}
-
-/* نمط القائمة العمودية (صور تحت بعض) */
-.images-container.list-mode {
-    display: flex;
-    flex-direction: column; /* ترتيب رأسي */
-    gap: 30px;
-    background: transparent;
-    padding: 20px;
-    overflow-x: hidden;
-}
-
-.list-mode .img-card {
-    width: 100%; /* تأخذ عرض الصفحة بالكامل */
-    max-width: 800px; /* تحديد عرض أقصى للصورة لراحة العين */
-    margin: 0 auto;
-    background: white;
-    padding: 20px;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
-
-.list-mode .img-card img {
-    width: 100%;
-    height: auto; /* الحفاظ على أبعاد الصورة الأصلية */
-    max-height: none; /* إلغاء تحديد الارتفاع */
-    object-fit: contain;
-    border-radius: 10px;
-}
-
-.list-mode .img-card p {
-    width: 100%;
-    font-size: 1.2rem;
-    padding: 15px;
-    margin-top: 10px;
-    background: #f8fafc;
-    color: var(--dark);
-    border-right: 5px solid var(--primary); /* إضافة علامة جانبية */
-}
-
-/* إخفاء أزرار التنقل العرضية في وضع القائمة */
-.list-mode-active .nav-btn {
-    display: none !important;
-}
-
- </style>
 </head>
 
 <body th:class="${shipment.status.name() == 'APPROVED' ? 'status-approved' : ''}">
 
-    <!-- زر الرجوع الذكي (العائم) -->
     <button onclick="smartBack()" class="back-fab" title="رجوع ذكي">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -265,7 +258,6 @@
         </svg>
     </button>
 
-    <!-- الهيدر والبيانات الأساسية -->
     <div class="title-container">
         <div class="info-wrapper">
             <div class="info-box">
@@ -284,27 +276,23 @@
             </div>
         </div>
      
-      <div class="stamp">
-         <span class="stamp-text">✅ تم الاعتماد</span>
-            <!-- جلب التاريخ المخزن في قاعدة البيانات وتنسيقه -->
-         <span class="stamp-date" th:text="${shipment.approvedAt != null ? #temporals.format(shipment.approvedAt, 'yyyy/MM/dd') : ''}"></span>
-      </div>
-   
+        <div class="stamp">
+            <span class="stamp-text">✅ تم الاعتماد</span>
+            <span class="stamp-date" th:text="${shipment.approvedAt != null ? #temporals.format(shipment.approvedAt, 'yyyy/MM/dd') : ''}"></span>
+        </div>
     </div>
 
-    <!-- أزرار تبديل وضع العرض (الجديد) -->
-<div class="view-switcher" style="text-align: center; margin: 20px 0;">
-    <button id="btnSlider" class="view-btn active" onclick="setView('slider')">🖼️ عرض السلايدر (عرضي)</button>
-    <button id="btnList" class="view-btn" onclick="setView('list')">📜 عرض القائمة (عمودي)</button>
-</div>
+    <div class="view-switcher">
+        <button id="btnSlider" class="view-btn active" onclick="setView('slider')">🖼️ عرض السلايدر (عرضي)</button>
+        <button id="btnList" class="view-btn" onclick="setView('list')">📜 عرض القائمة (عمودي)</button>
+    </div>
     
-    <!-- حاوية الصور (تدعم الوضعين) -->
     <div id="mainWrapper" class="slider-wrapper">
         <button onclick="scrollSlider(-300)" class="nav-btn left-btn">❮</button>
         
         <div id="slider" class="images-container">
             <div class="img-card" th:each="doc : ${shipment.documents}">
-                <img th:src="${doc.fileUrl}" onclick="openModal(this)">
+                <img th:src="${doc.fileUrl}" onclick="openModal(this)" onerror="this.src='https://via.placeholder.com/200x260?text=خطأ+في+التحميل'">
                 <p th:text="${doc.type.name() == 'BILL_OF_LADING' ? 'بوليصة شحن' : 
                               doc.type.name() == 'DELIVERY_ORDER' ? 'إذن تسليم' : 
                               doc.type.name() == 'CERTIFICATE_OF_ORIGIN' ? 'شهادة منشأ' : 
@@ -321,16 +309,13 @@
         <button onclick="scrollSlider(300)" class="nav-btn right-btn">❯</button>
     </div>
 
-    <!-- أزرار الإجراءات السفلى -->
     <div class="action-container">
         <button class="btn btn-print" onclick="window.print()">🖨️ طباعة الملف بالكامل</button>
         <a th:href="@{/shipments}" class="btn btn-back">↩ عودة للقائمة</a>
     </div>
 
-    <!-- المودال (مع الأسهم والزوم المحدثة) -->
     <div id="imgModal" class="modal">
         <span class="close-btn" onclick="closeModal()">&times;</span>
-        
         <button class="modal-nav modal-prev" onclick="changeImage(-1)">❮</button>
         <img id="modalImg" class="modal-content">
         <button class="modal-nav modal-next" onclick="changeImage(1)">❯</button>
@@ -345,7 +330,6 @@
     </div>
 
     <script>
-        // دالة الرجوع الذكي للعائم
         function smartBack() {
             if (document.referrer !== "" && document.referrer.includes(window.location.hostname)) {
                 window.history.back();
@@ -354,15 +338,13 @@
             }
         }
 
-        window.onload = () => {
-            const dateSpan = document.getElementById('currentStampDate');
-            dateSpan.innerText = new Date().toLocaleDateString('ar-LY', { year: 'numeric', month: '2-digit', day: '2-digit' });
-            allImages = Array.from(document.querySelectorAll('#slider img')).map(img => img.src);
-        };
-
         let scale = 1, rotate = 0, currentIdx = 0;
         let isDragging = false, startX, startY, translateX = 0, translateY = 0;
         let allImages = [];
+
+        window.onload = () => {
+            allImages = Array.from(document.querySelectorAll('#slider img')).map(img => img.src);
+        };
 
         const modalImg = document.getElementById("modalImg");
         const imgModal = document.getElementById("imgModal");
@@ -403,34 +385,26 @@
         };
 
         function scrollSlider(amt) { document.getElementById('slider').scrollBy({ left: amt, behavior: 'smooth' }); }
+
+        function setView(mode) {
+            const slider = document.getElementById('slider');
+            const wrapper = document.getElementById('mainWrapper');
+            const btnSlider = document.getElementById('btnSlider');
+            const btnList = document.getElementById('btnList');
+
+            if (mode === 'list') {
+                slider.classList.add('list-mode');
+                wrapper.classList.add('list-mode-active');
+                btnList.classList.add('active');
+                btnSlider.classList.remove('active');
+                window.scrollTo({ top: wrapper.offsetTop - 50, behavior: 'smooth' });
+            } else {
+                slider.classList.remove('list-mode');
+                wrapper.classList.remove('list-mode-active');
+                btnSlider.classList.add('active');
+                btnList.classList.remove('active');
+            }
+        }
     </script>
-
-
-
-<script>
-
-function setView(mode) {
-    const slider = document.getElementById('slider');
-    const wrapper = document.getElementById('mainWrapper');
-    const btnSlider = document.getElementById('btnSlider');
-    const btnList = document.getElementById('btnList');
-
-    if (mode === 'list') {
-        slider.classList.add('list-mode');
-        wrapper.classList.add('list-mode-active');
-        btnList.classList.add('active');
-        btnSlider.classList.remove('active');
-        // تمرير الصفحة للأعلى عند التبديل
-        window.scrollTo({ top: wrapper.offsetTop - 50, behavior: 'smooth' });
-    } else {
-        slider.classList.remove('list-mode');
-        wrapper.classList.remove('list-mode-active');
-        btnSlider.classList.add('active');
-        btnList.classList.remove('active');
-    }
-}
-
-</script>
-
 </body>
 </html>
