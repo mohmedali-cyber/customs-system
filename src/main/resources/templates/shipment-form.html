@@ -214,19 +214,28 @@
 <style>
 #cards-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
-    gap: 20px;
-    /* إضافة هذه الأسطر */
-    justify-content: center; /* توسيط الكروت في المساحات الواسعة */
-    align-items: start;      /* منع الكروت من التمدد طولياً بشكل غير متساوي */
-    padding: 10px;           /* مسافة أمان عن حواف الصفحة */
+    /* التعديل هنا: جعل أقل عرض للكارت 350px بدلاً من 280px ليعطي فخامة في اللابتوب */
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
+    gap: 25px; /* تكبير المسافة بين الكروت قليلاً */
+    justify-content: center; 
+    align-items: start;      
+    padding: 20px;           
 }
 
-.form-group {
+/* إضافة لمسة احترافية خاصة بـ "اللابتوب" فقط */
+@media screen and (min-width: 1200px) {
+    .main-container {
+        max-width: 1200px; /* تكبير الحاوية الرئيسية لتناسب الشاشات الكبيرة */
+    }
+    
+    .form-group {
+        padding: 25px; /* زيادة المساحة الداخلية للكارت ليعطي شعوراً بالراحة */
     background: rgb(218, 218, 218);
     backdrop-filter: blur(10px); /* تنعيم ما خلف الكارد */
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
+
+
 </style>
 <style>
 .halo-logo {
