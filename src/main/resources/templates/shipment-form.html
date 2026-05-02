@@ -350,6 +350,46 @@
     border-color: #3b82f6; /* تغيير لون الإطار للأزرق */
 }
 </style>
+
+<style>
+/* كود التجاوب - لضمان عمل الصفحة على اللابتوب والأيباد */
+@media screen and (max-width: 1024px) {
+    .main-container {
+        width: 95%;
+        padding: 15px;
+        margin: 10px auto;
+    }
+
+    /* جعل الحقول تأخذ مساحة أكبر في الأجهزة المتوسطة */
+    #page1 > div {
+        grid-template-columns: 1fr !important; /* تحويل الشبكة لعمود واحد */
+        gap: 10px;
+    }
+
+    .form-group {
+        grid-column: span 2 !important; /* إجبار الكروت على أخذ العرض كاملاً */
+    }
+
+    #cards-container {
+        grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)) !important;
+    }
+
+    .save-btn {
+        width: 90%; /* تكبير زر الحفظ ليناسب اللمس في الأيباد */
+    }
+
+    .halo-logo {
+        width: 220px; /* تصغير الشعار قليلاً في الأجهزة الأصغر */
+    }
+}
+
+/* تحسينات إضافية للشاشات العريضة جداً (اللابتوب الكبير) */
+@media screen and (min-width: 1025px) {
+    #cards-container {
+        grid-template-columns: repeat(3, 1fr) !important; /* عرض 3 كروت في الصف في الشاشات الواسعة */
+    }
+}
+</style>
 </head>
 <body>
 
@@ -390,8 +430,9 @@
         </div>
 
         <div id="page2" class="page">
-            <div id="cards-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                </div>
+  
+            <div id="cards-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;"></div>          
+  
         </div>
 
         <div class="pagination">
