@@ -28,10 +28,18 @@
         .header-banner {
             background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
             padding: 45px 20px; text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgb(255, 141, 28);
+
             border-bottom: 4px solid var(--secondary);
             margin-bottom: 50px;
         }
+
+
+/* التأكد من بقاء خلفية الصفحة بيضاء أو رمادية فاتحة */
+body {
+    background-color: var(--light-bg);
+}
+
 
         @keyframes logoExpose {
             0% { filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2)) brightness(1); }
@@ -88,6 +96,8 @@
     animation: blueGlowFloat 10s infinite ease-in-out;
 }
 
+
+
 @keyframes blueGlowFloat {
     0% { 
         transform: translateY(0); 
@@ -141,6 +151,9 @@
 
         .fade-in { animation: fadeInUp 0.8s ease-out forwards; opacity: 0; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+   
+   
+   
     </style>
 </head>
 <body>
@@ -178,5 +191,37 @@
         </form>
     </div>
 -->
+<script>
+    window.addEventListener('load', () => {
+        const header = document.querySelector('.header-banner');
+
+        // مصفوفة الألوان المطلوبة فقط
+        const colors = [
+            '#000000', // أسود
+            '#FFD700', // ذهبي مشرق
+            '#B8860B', // ذهبي معتق
+            '#1e3a8a', // أزرق كحلي
+            '#3b82f6'  // أزرق ملكي
+        ];
+
+        const changeShadowColor = () => {
+            if (header) {
+                // التأكد برمجياً من وجود التلاشي المريح
+                header.style.transition = "box-shadow 2s ease-in-out";
+                
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                // تطبيق اللون
+                header.style.boxShadow = `0 10px 35px ${randomColor}`;
+            }
+        };
+
+        // تشغيل التغيير الأول فوراً
+        changeShadowColor();
+
+        // تكرار العملية كل 4 ثوانٍ (ثانيتين ثبات وثانيتين تلاشي)
+        setInterval(changeShadowColor, 4000); 
+    });
+</script>
 </body>
 </html>

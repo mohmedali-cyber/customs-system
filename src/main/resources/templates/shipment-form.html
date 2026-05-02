@@ -737,13 +737,14 @@ function updateLightboxImage() { document.getElementById('lightbox-img').src = c
 function changeImage(step, event) { event.stopPropagation(); currentIndex += step; if (currentIndex >= currentImages.length) currentIndex = 0; if (currentIndex < 0) currentIndex = currentImages.length - 1; updateLightboxImage(); }
 function closeLightbox(event) { if (event.target.id === 'lightbox') document.getElementById('lightbox').style.display = 'none'; }
 </script>
+
 <div id="lightbox" class="lightbox-overlay" onclick="closeLightbox(event)">
     <span class="lightbox-close" onclick="document.getElementById('lightbox').style.display='none'">&times;</span>
     <span class="lightbox-nav lightbox-prev" onclick="changeImage(-1, event)">&#10094;</span>
     <img id="lightbox-img" class="lightbox-img" src="" alt="">
     <span class="lightbox-nav lightbox-next" onclick="changeImage(1, event)">&#10095;</span>
 </div>
-</body>
+
 <script>
 // دالة لتشغيل الحركة القوية كل دقيقة
 function triggerStrongAnimation() {
@@ -768,4 +769,7 @@ window.addEventListener('load', () => {
     setTimeout(triggerStrongAnimation, 1000); 
 });
 </script>
+
+
+</body>
 </html>
