@@ -238,6 +238,105 @@
     transform: translateY(-3px); /* رفعة بسيطة عند التمرير */
 }
 </style>
+
+<style>
+/* --- إضافات التوافق مع النقال (Responsive Design) --- */
+@media (max-width: 768px) {
+    body {
+        padding: 10px; /* تقليل المسافات الجانبية في النقال */
+    }
+
+    /* ضبط الشعار ليناسب الشاشات الصغيرة */
+    .halo-logo-hero {
+        height: 300px; /* تقليل ارتفاع الخلفية */
+    }
+    .moving-logo-float {
+        width: 120px; /* تصغير الشعار المتحرك */
+    }
+
+    /* تحويل الهيدر لنظام عمودي */
+    .header-main {
+        flex-direction: column;
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .system-date {
+        position: static; /* إلغاء التمركز المطلق ليظهر تحت العنوان */
+        transform: none;
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    /* جعل التبويبات (التابات) قابلة للتمرير عرضياً */
+    .tabs-container {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 5px;
+    }
+    .tab-link {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+
+    /* تحويل الجدول إلى "كروت" (Cards) لسهولة القراءة */
+    table, thead, tbody, th, td, tr { 
+        display: block; 
+        width: 100%;
+    }
+    
+    thead { display: none; } /* إخفاء رؤوس الجدول في النقال */
+    
+    tr {
+        margin-bottom: 20px;
+        border: 1px solid rgb(255, 128, 0);
+        border-radius: 15px;
+        background: #fff;
+        overflow: hidden;
+    }
+
+    td {
+        text-align: right;
+        padding: 12px 15px;
+        position: relative;
+        padding-right: 45%; /* مساحة لاسم العمود */
+        border: none !important;
+        border-bottom: 1px solid #eee !important;
+    }
+
+    /* إضافة اسم العمود قبل كل قيمة */
+    td:before {
+        position: absolute;
+        right: 15px;
+        width: 40%;
+        font-weight: 700;
+        color: var(--primary);
+        content: attr(data-label); /* سيحتاج إضافة بسيطة في HTML أو نكتبها يدوياً */
+        text-align: right;
+    }
+
+    /* تعديل العمليات لتظهر بجانب بعضها */
+    td:last-child {
+        border-bottom: none !important;
+        background: #fdfdfd;
+    }
+    
+    .workspace {
+        padding: 15px;
+    }
+
+    .search-box {
+        flex-direction: column;
+    }
+
+    .back-fab {
+        width: 50px;
+        height: 50px;
+        bottom: 20px;
+        left: 20px;
+    }
+}
+</style>
 </head>
 <body>
 
@@ -314,30 +413,41 @@
        
                 </thead>
                 <tbody>
-                    <tr th:each="s : ${shipments}">
-                        <td><strong th:text="${s.containerNumber}" style="color: var(--primary3); font-size: 1.1rem;"></strong></td>
-                        <td th:text="${s.customsbroker}" style="color: var(--primary3); font-size: 1.1rem;"></td>
-                        <td><span class="stat-badge" th:text="${s.statisticalCode}" ></span></td>
-                        <td>
-                            <div th:if="${s.status.name() == 'REJECTED'}">
-                                <span style="color: var(--danger); font-weight: 700;">❌ مرفوضة</span><br>
-                                <!-- زر العرض عند الضغط كما طلبت -->
-                                <button class="btn-reason" th:onclick="showReason([[${s.rejectionReason}]])">🔎 عرض السبب</button>
-                            </div>
-                            <span th:if="${s.status.name() == 'APPROVED'}" style="color: var(--success); font-weight: 700;">✅ معتمدة</span>
-                            <span th:if="${s.status.name() == 'PENDING'}" style="color: var(--text-muted); font-weight: 700⏳;"> قيد المراجعة</span>
-                        </td>
-                        <td>
-                            <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
-                                <a th:href="@{'/shipments/view-docs/' + ${s.id}}" class="btn-mini btn-view">عرض</a>
-                                <th:block th:if="${s.status.name() == 'PENDING'}">
-                                    <button class="btn-mini btn-approve" th:onclick="'fireConfirm(' + ${s.id} + ', \'approve\')'">اعتماد</button>
-                                    <button class="btn-mini btn-reject" th:onclick="'fireConfirm(' + ${s.id} + ', \'reject\')'">رفض</button>
-                                </th:block>
-                                <button class="btn-delete" th:onclick="'fireDelete(' + ${s.id} + ')'">🗑️</button>
-                            </div>
-                        </td>
-                    </tr>
+                <tr th:each="s : ${shipments}">
+    <!-- رقم الحاوية -->
+    <td data-label="رقم الحاوية">
+        <strong th:text="${s.containerNumber}" style="color: var(--primary3); font-size: 1.1rem;"></strong>
+    </td>
+
+    <!-- المخلص الجمركي -->
+    <td data-label="المخلص الجمركي" th:text="${s.customsbroker}" style="color: var(--primary3); font-size: 1.1rem;"></td>
+
+    <!-- الرمز الإحصائي -->
+    <td data-label="الرمز الإحصائي">
+        <span class="stat-badge" th:text="${s.statisticalCode}"></span>
+    </td>
+
+    <!-- الحالة والعمليات (تكملة الكود الخاص بك) -->
+    <td data-label="الحالة">
+        <div th:if="${s.status.name() == 'REJECTED'}">
+            <span style="color: var(--danger); font-weight: 700;">❌ مرفوضة</span><br>
+            <button class="btn-reason" th:onclick="showReason([[${s.rejectionReason}]])">🔎 عرض السبب</button>
+        </div>
+        <span th:if="${s.status.name() == 'APPROVED'}" style="color: var(--success); font-weight: 700;">✅ معتمدة</span>
+        <span th:if="${s.status.name() == 'PENDING'}" style="color: var(--text-muted); font-weight: 700;">⏳ قيد المراجعة</span>
+    </td>
+
+    <td data-label="العمليات">
+        <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
+            <a th:href="@{'/shipments/view-docs/' + ${s.id}}" class="btn-mini btn-view">عرض</a>
+            <th:block th:if="${s.status.name() == 'PENDING'}">
+                <button class="btn-mini btn-approve" th:onclick="'fireConfirm(' + ${s.id} + ', \'approve\')'">اعتماد</button>
+                <button class="btn-mini btn-reject" th:onclick="'fireConfirm(' + ${s.id} + ', \'reject\')'">رفض</button>
+            </th:block>
+            <button class="btn-delete" th:onclick="'fireDelete(' + ${s.id} + ')'">🗑️</button>
+        </div>
+    </td>
+</tr>
                 </tbody>
             </table>
 
