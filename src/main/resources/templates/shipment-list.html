@@ -351,16 +351,15 @@
 
 
 
+
 <div class="logo-section">
     <div class="luxury-logo-wrapper">
-        <!-- صورة الخلفية ثابتة بنفس الطول الذي حددته -->
+        <!-- تأكد من وجود المائلة قبل images -->
         <img th:src="@{/images/bbp.png}" class="halo-logo-hero" alt="الخلفية" />
         
-        <!-- الشعار الذي سيرفرف كالعلم -->
        <div class="floating-overlay">
-    <!-- تأكد أن الكلاس هنا هو moving-logo-float وليس شيئاً آخر -->
-    <img th:src="@{/images/dr.png}" class="moving-logo-float" alt="شعار متحرك" />
-</div>
+            <img th:src="@{/images/dr.png}" class="moving-logo-float" alt="شعار متحرك" />
+       </div>
     </div>
 </div>
 
@@ -472,20 +471,23 @@
         function smartBack() { window.location.href = '/'; }
 
 function showReason(reason) {
+    // هذا السطر يضمن الحصول على الرابط الرئيسي للموقع (مثلاً: http://localhost:8080 أو رابط ريندر)
+    const baseUrl = window.location.origin;
+    const imageUrl = baseUrl + '/images/ty.png';
+
     Swal.fire({
         title: '',
         html: `
             <div style="
-                background-image: url('/images/ty.png'); 
+                background-image: url('${imageUrl}'); 
                 background-size: 100% 100%; 
                 background-repeat: no-repeat;
                 width: 100%; 
-                height: 550px; /* زدنا الطول الكلي */
+                height: 550px; 
                 display: flex; 
                 align-items: center; 
                 justify-content: center; 
                 box-sizing: border-box;
-                /* تعديل الـ padding لحصر النص في المربع الشفاف بالضبط */
                 padding: 100px 80px; 
                 border: 1px solid rgba(0, 0, 0, 0.1);
                 border-radius: 15px;
@@ -495,7 +497,7 @@ function showReason(reason) {
                     font-family: 'Cairo', sans-serif;
                     text-align: center;
                     word-wrap: break-word;
-                    overflow-y: auto; /* لو النص زاد جداً يسمح بالتمرير داخل المربع */
+                    overflow-y: auto; 
                     max-height: 100%;
                     width: 100%;
                 ">
@@ -504,7 +506,7 @@ function showReason(reason) {
                     </h3>
                     <p style="
                         font-weight: 700; 
-                        font-size: 1.1rem; /* تصغير الخط درجة واحدة ليتسع للنصوص الطويلة */
+                        font-size: 1.1rem; 
                         line-height: 1.6; 
                         margin: 0;
                         color: #0f172a;
@@ -517,7 +519,7 @@ function showReason(reason) {
         showConfirmButton: true,
         confirmButtonColor: '#fb7185',
         confirmButtonText: 'إغلاق',
-        width: '600px', /* تكبير عرض النافذة الكلي */
+        width: '600px',
         padding: '0',
         background: 'transparent'
     });
