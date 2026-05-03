@@ -16,10 +16,11 @@
             --accent-glow: rgba(37, 99, 235, 0.15);
             --bg-body: rgb(255, 255, 255);
             --text-main: rgb(255, 169, 83);
-            --text-muted: rgb(128, 255, 0);
-            --text-muted2: rgb(255, 128, 0);
+            --text-muted: rgb(255, 128, 0);
+            --text-muted4: rgb(255, 255, 255);
             --white: rgb(192, 192, 192);
             --success: #059669;
+            --success1: rgb(255, 255, 255);
             --danger: #dc2626;
             --shadow-md: 0 10px 25px -5px rgb(255, 197, 138);
             --radius: 16px;
@@ -55,21 +56,42 @@
         .header-info { display: flex; align-items: center; gap: 25px; }
         .portal-btn {
             background: var(--primary); color: rgb(255, 168, 81); text-decoration: none;
-            padding: 12px 25px; border-radius: 12px; font-weight: 600;
+            padding: 1px 25px; border-radius: 12px; font-weight: 600;
             display: flex; align-items: center; gap: 12px; transition: 0.3s;
         }
         .portal-btn:hover { background: var(--accent); }
 
         .tabs-container { display: flex; gap: 12px; margin-bottom: -1px; padding: 0 20px; }
-        .tab-link {
-            padding: 14px 28px; background: rgb(75, 75, 75); 
-            border-radius: 14px 14px 0 0; text-decoration: none; 
-            color: var(--text-muted); font-weight: 700; transition: 0.3s;
-        }
-        .tab-link.active {
-            background: var(--white); color: var(--accent);
-            border-top: 4px solid var(--accent); position: relative; z-index: 2;
-        }
+.tab-link {
+    padding: 22px 40px;
+    background: rgb(75, 75, 75);
+    border-radius: 20px 18px 0 0;
+    color: var(--text-muted);
+    font-weight:900;
+    transition: 0.3s;
+    border: none;
+    cursor: pointer;
+    position: relative;
+}
+
+/* 🔥 التاب النشط */
+.tab-link.active {
+    animation: glowPulse 5s infinite;
+}
+
+@keyframes glowPulse {
+    0% {
+        box-shadow: 0 0 5px rgba(255,140,0,0.5);
+    }
+    50% {
+        box-shadow: 
+            0 0 20px rgba(255,140,0,0.8),
+            0 0 40px rgba(255,140,0,0.6);
+    }
+    100% {
+        box-shadow: 0 0 px rgba(255,140,0,0.5);
+    }
+}
 
         .workspace {
             background: var(--white); border-radius: var(--radius);
@@ -238,105 +260,6 @@
     transform: translateY(-3px); /* رفعة بسيطة عند التمرير */
 }
 </style>
-
-<style>
-/* --- إضافات التوافق مع النقال (Responsive Design) --- */
-@media (max-width: 768px) {
-    body {
-        padding: 10px; /* تقليل المسافات الجانبية في النقال */
-    }
-
-    /* ضبط الشعار ليناسب الشاشات الصغيرة */
-    .halo-logo-hero {
-        height: 300px; /* تقليل ارتفاع الخلفية */
-    }
-    .moving-logo-float {
-        width: 120px; /* تصغير الشعار المتحرك */
-    }
-
-    /* تحويل الهيدر لنظام عمودي */
-    .header-main {
-        flex-direction: column;
-        padding: 20px;
-        gap: 15px;
-    }
-
-    .system-date {
-        position: static; /* إلغاء التمركز المطلق ليظهر تحت العنوان */
-        transform: none;
-        text-align: center;
-        margin-top: 10px;
-    }
-
-    /* جعل التبويبات (التابات) قابلة للتمرير عرضياً */
-    .tabs-container {
-        overflow-x: auto;
-        white-space: nowrap;
-        padding-bottom: 5px;
-    }
-    .tab-link {
-        padding: 10px 15px;
-        font-size: 0.9rem;
-    }
-
-    /* تحويل الجدول إلى "كروت" (Cards) لسهولة القراءة */
-    table, thead, tbody, th, td, tr { 
-        display: block; 
-        width: 100%;
-    }
-    
-    thead { display: none; } /* إخفاء رؤوس الجدول في النقال */
-    
-    tr {
-        margin-bottom: 20px;
-        border: 1px solid rgb(255, 128, 0);
-        border-radius: 15px;
-        background: #fff;
-        overflow: hidden;
-    }
-
-    td {
-        text-align: right;
-        padding: 12px 15px;
-        position: relative;
-        padding-right: 45%; /* مساحة لاسم العمود */
-        border: none !important;
-        border-bottom: 1px solid #eee !important;
-    }
-
-    /* إضافة اسم العمود قبل كل قيمة */
-    td:before {
-        position: absolute;
-        right: 15px;
-        width: 40%;
-        font-weight: 700;
-        color: var(--primary);
-        content: attr(data-label); /* سيحتاج إضافة بسيطة في HTML أو نكتبها يدوياً */
-        text-align: right;
-    }
-
-    /* تعديل العمليات لتظهر بجانب بعضها */
-    td:last-child {
-        border-bottom: none !important;
-        background: #fdfdfd;
-    }
-    
-    .workspace {
-        padding: 15px;
-    }
-
-    .search-box {
-        flex-direction: column;
-    }
-
-    .back-fab {
-        width: 50px;
-        height: 50px;
-        bottom: 20px;
-        left: 20px;
-    }
-}
-</style>
 </head>
 <body>
 
@@ -349,22 +272,17 @@
     </svg>
 </button>
 
-
-
-
 <div class="logo-section">
     <div class="luxury-logo-wrapper">
-        <!-- تأكد من وجود المائلة قبل images -->
         <img th:src="@{/images/bbp.png}" class="halo-logo-hero" alt="الخلفية" />
         
-       <div class="floating-overlay">
+        <div class="floating-overlay">
             <img th:src="@{/images/dr.png}" class="moving-logo-float" alt="شعار متحرك" />
-       </div>
+        </div>
     </div>
 </div>
 
 <div class="header-main">
-    <!-- حاوية فارغة للموازنة (لسحب العنوان للمنتصف بضبط) -->
     <div class="header-spacer"></div>
 
     <div class="header-info">
@@ -378,45 +296,43 @@
         </a>
     </div>
 
-    <!-- حاوية التاريخ في الجنب -->
     <div class="system-date">
         <div class="date-label">تاريخ النظام</div>
         <div class="date-value" th:text="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">2026-05-03</div>
     </div>
 </div>
-  <!-- 1. التبويبات المعدلة لتعمل بدون تحديث صفحة -->
+
 <div class="tabs-container">
-    <a href="javascript:void(0)" 
-       th:onclick="'loadData(\'PENDING\', \'' + ${keyword ?: ''} + '\', 0)'" 
-       class="tab-link" id="tab-PENDING"
-       th:classappend="${currentStatus == 'PENDING' ? 'active' : ''}">📥 قيد المراجعة</a>
+<button class="tab-link"
+        th:classappend="${currentStatus == 'PENDING'} ? 'active' : ''"
+        onclick="loadTab('PENDING', this)">
+    📥 قيد المراجعة
+</button>
 
-    <a href="javascript:void(0)" 
-       th:onclick="'loadData(\'APPROVED\', \'' + ${keyword ?: ''} + '\', 0)'" 
-       class="tab-link" id="tab-APPROVED"
-       th:classappend="${currentStatus == 'APPROVED' ? 'active' : ''}">✅ معتمدة</a>
+<button class="tab-link"
+        th:classappend="${currentStatus == 'APPROVED'} ? 'active' : ''"
+        onclick="loadTab('APPROVED', this)">
+    ✅ معتمدة
+</button>
 
-    <a href="javascript:void(0)" 
-       th:onclick="'loadData(\'REJECTED\', \'' + ${keyword ?: ''} + '\', 0)'" 
-       class="tab-link" id="tab-REJECTED"
-       th:classappend="${currentStatus == 'REJECTED' ? 'active' : ''}">❌ مرفوضة</a>
+<button class="tab-link"
+        th:classappend="${currentStatus == 'REJECTED'} ? 'active' : ''"
+        onclick="loadTab('REJECTED', this)">
+    ❌ مرفوضة
+</button>
 </div>
 
 <div class="workspace">
-    <!-- البحث: جعلناه يقرأ الحالة النشطة حالياً من الحقل المخفي -->
-    <form onsubmit="event.preventDefault(); loadData(document.getElementById('currentStatusField').value, document.getElementById('searchKeyword').value, 0);" 
-          class="search-box" 
+
+    <form th:action="@{/shipments}" method="get" class="search-box"
           style="display: flex; gap: 10px; margin-bottom: 30px; background: #f8fafc; padding: 8px; border-radius: 15px;">
-        
-        <input type="hidden" id="currentStatusField" name="status" th:value="${currentStatus}"> 
-        <input type="text" name="keyword" th:value="${keyword}" id="searchKeyword"
-               style="flex: 1; border: none; background: transparent; padding: 10px; font-family: 'Cairo';" 
-               placeholder="ابحث برقم الحاوية أو المخلص...">
+        <input type="hidden" name="status" th:value="${currentStatus}"> 
+        <input type="text" name="keyword" th:value="${keyword}" style="flex: 1; border: none; background: transparent; padding: 10px; font-family: 'Cairo';" placeholder="ابحث برقم الحاوية أو المخلص...">
         <button type="submit" style="background: var(--primary); color: rgb(255, 128, 0); border: none; padding: 10px 30px; border-radius: 12px; cursor: pointer; font-weight: 700;">بحث</button>
     </form>
 
-    <div id="content-to-refresh">
-        <!-- الجدول والبيانات -->
+    <!-- 🔥 الجزء اللي بيتحدث فقط -->
+<div id="table-container" th:fragment="tableFragment">
         <div th:if="${not #lists.isEmpty(shipments)}">
             <table>
                 <thead class="custom-thead">
@@ -424,34 +340,36 @@
                         <th>رقم الحاوية</th>
                         <th>المخلص الجمركي</th>
                         <th>الرمز الإحصائي</th>
-                        <th>الحالة </th>
+                        <th>الحالة</th>
                         <th>العمليات</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     <tr th:each="s : ${shipments}">
-                        <td data-label="رقم الحاوية">
-                            <strong th:text="${s.containerNumber}" style="color: var(--primary3); font-size: 1.1rem;"></strong>
-                        </td>
-                        <td data-label="المخلص الجمركي" th:text="${s.customsbroker}" style="color: var(--primary3); font-size: 1.1rem;"></td>
-                        <td data-label="الرمز الإحصائي">
-                            <span class="stat-badge" th:text="${s.statisticalCode}"></span>
-                        </td>
-                        <td data-label="الحالة">
+                        <td><strong th:text="${s.containerNumber}" style="color: var(--primary3); font-size: 1.1rem;"></strong></td>
+                        <td th:text="${s.customsbroker}" style="color: var(--primary3); font-size: 1.1rem;"></td>
+                        <td><span class="stat-badge" th:text="${s.statisticalCode}"></span></td>
+
+                        <td>
                             <div th:if="${s.status.name() == 'REJECTED'}">
                                 <span style="color: var(--danger); font-weight: 700;">❌ مرفوضة</span><br>
                                 <button class="btn-reason" th:onclick="showReason([[${s.rejectionReason}]])">🔎 عرض السبب</button>
                             </div>
-                            <span th:if="${s.status.name() == 'APPROVED'}" style="color: var(--success); font-weight: 700;">✅ معتمدة</span>
-                            <span th:if="${s.status.name() == 'PENDING'}" style="color: var(--text-muted); font-weight: 700;">⏳ قيد المراجعة</span>
+
+                            <span th:if="${s.status.name() == 'APPROVED'}" style="color: var(--success1); font-weight: 700;">✅ معتمدة</span>
+                            <span th:if="${s.status.name() == 'PENDING'}" style="color: var(--text-muted4); font-weight: 700;">⏳ قيد المراجعة</span>
                         </td>
-                        <td data-label="العمليات">
+
+                        <td>
                             <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
                                 <a th:href="@{'/shipments/view-docs/' + ${s.id}}" class="btn-mini btn-view">عرض</a>
+
                                 <th:block th:if="${s.status.name() == 'PENDING'}">
                                     <button class="btn-mini btn-approve" th:onclick="'fireConfirm(' + ${s.id} + ', \'approve\')'">اعتماد</button>
                                     <button class="btn-mini btn-reject" th:onclick="'fireConfirm(' + ${s.id} + ', \'reject\')'">رفض</button>
                                 </th:block>
+
                                 <button class="btn-delete" th:onclick="'fireDelete(' + ${s.id} + ')'">🗑️</button>
                             </div>
                         </td>
@@ -460,84 +378,48 @@
             </table>
 
             <div class="pagination-container" th:if="${totalPages > 1}">
-                <ul class="pagination-list">
-                    <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
-                        <a href="javascript:void(0)" 
-                           th:onclick="|loadData('${currentStatus}', '${keyword}', ${i})|"
+                <div class="page-info">
+                    صفحة <span th:text="${currentPage + 1}"></span> من 
+                    <span th:text="${totalPages}"></span>
+                </div>
+
+                <ul class="pagination-list" style="margin:0; padding:0;">
+                    <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}" style="list-style:none;">
+                        <a th:href="@{/shipments(status=${currentStatus}, keyword=${keyword}, page=${i})}" 
                            th:text="${i + 1}" 
-                           class="page-item-link" 
-                           th:classappend="${i == currentPage} ? 'active' : ''"></a>
+                           class="page-item-link"
+                           th:classappend="${i == currentPage} ? 'active' : ''">
+                        </a>
                     </li>
                 </ul>
             </div>
         </div>
 
         <div th:if="${#lists.isEmpty(shipments)}" style="text-align: center; padding: 100px 0;">
-             <h3 style="color: var(--text-muted2);">لا توجد سجلات حالياً</h3>
+            <h3 style="color: var(--text-muted2);">لا توجد سجلات حالياً</h3>
         </div>
+
     </div>
+
 </div>
-
-<!-- 4. السكريبت المسؤول عن الثبات (ضعه قبل نهاية وسم body) -->
-<script>
-function loadData(status, keyword, page) {
-    const container = document.getElementById('content-to-refresh');
-    if (container) container.style.opacity = '0.4';
-
-    const url = `/shipments?status=${status}&keyword=${encodeURIComponent(keyword || '')}&page=${page}`;
-
-    fetch(url)
-        .then(response => response.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newContent = doc.getElementById('content-to-refresh');
-            
-            if (newContent) {
-                // 1. تحديث الجدول
-                container.innerHTML = newContent.innerHTML;
-                container.style.opacity = '1';
-                
-                // 2. تحديث الحقل المخفي ليكون البحث متوافق مع التبويب الجديد
-                document.getElementById('currentStatusField').value = status;
-                
-                // 3. تحديث الشكل المرئي للتبويبات
-                document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
-                const activeTab = document.getElementById('tab-' + status);
-                if (activeTab) activeTab.classList.add('active');
-
-                // 4. تحديث رابط المتصفح
-                window.history.pushState({status, keyword, page}, '', url);
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            window.location.href = url; // Fail-safe
-        });
-}
-</script>
-
     <script>
         function smartBack() { window.location.href = '/'; }
 
 function showReason(reason) {
-    // هذا السطر يضمن الحصول على الرابط الرئيسي للموقع (مثلاً: http://localhost:8080 أو رابط ريندر)
-    const baseUrl = window.location.origin;
-    const imageUrl = baseUrl + '/images/ty.png';
-
     Swal.fire({
         title: '',
         html: `
             <div style="
-                background-image: url('${imageUrl}'); 
+                background-image: url('/images/ty.png'); 
                 background-size: 100% 100%; 
                 background-repeat: no-repeat;
                 width: 100%; 
-                height: 550px; 
+                height: 550px; /* زدنا الطول الكلي */
                 display: flex; 
                 align-items: center; 
                 justify-content: center; 
                 box-sizing: border-box;
+                /* تعديل الـ padding لحصر النص في المربع الشفاف بالضبط */
                 padding: 100px 80px; 
                 border: 1px solid rgba(0, 0, 0, 0.1);
                 border-radius: 15px;
@@ -547,7 +429,7 @@ function showReason(reason) {
                     font-family: 'Cairo', sans-serif;
                     text-align: center;
                     word-wrap: break-word;
-                    overflow-y: auto; 
+                    overflow-y: auto; /* لو النص زاد جداً يسمح بالتمرير داخل المربع */
                     max-height: 100%;
                     width: 100%;
                 ">
@@ -556,7 +438,7 @@ function showReason(reason) {
                     </h3>
                     <p style="
                         font-weight: 700; 
-                        font-size: 1.1rem; 
+                        font-size: 1.1rem; /* تصغير الخط درجة واحدة ليتسع للنصوص الطويلة */
                         line-height: 1.6; 
                         margin: 0;
                         color: #0f172a;
@@ -569,7 +451,7 @@ function showReason(reason) {
         showConfirmButton: true,
         confirmButtonColor: '#fb7185',
         confirmButtonText: 'إغلاق',
-        width: '600px',
+        width: '600px', /* تكبير عرض النافذة الكلي */
         padding: '0',
         background: 'transparent'
     });
@@ -639,5 +521,41 @@ function showReason(reason) {
             .then((result) => { if (result.isConfirmed) window.location.href = '/shipments/delete/' + id; });
         }
     </script>
+
+<script>
+async function loadTab(status, el) {
+
+    // 🔥 ده أهم سطر (خليه الأول)
+    document.querySelectorAll('.tab-link').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    el.classList.add('active'); // ← اعتمد على الزر نفسه فقط
+
+    try {
+        const res = await fetch(`/shipments/fragment?status=${status}`);
+        const html = await res.text();
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        const newTable = doc.querySelector('#table-container').innerHTML;
+
+        document.querySelector('#table-container').innerHTML = newTable;
+
+    } catch (e) {
+        console.error("خطأ:", e);
+    }
+}
+
+function reBindActions() {
+    // حالياً مش محتاجين نعمل حاجة
+    // بس هنستخدمها لو حبينا نربط events لاحقاً
+}
+function resetTabs() {
+    document.querySelectorAll('.tab-link').forEach(btn => {
+        btn.classList.remove('active');
+    });
+}
+</script>
 </body>
 </html>

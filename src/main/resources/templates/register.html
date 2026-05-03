@@ -1,86 +1,159 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ar" dir="rtl" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إنشاء حساب جديد - مصلحة الجمارك</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-blue: rgb(0, 0, 0);
+            --gold: #FFD700;
+            --dark-bg: #0f172a;
+            --glass-white: rgba(255, 255, 255, 0.92);
+        }
+
         body {
             margin: 0;
-            padding: 0;
-            height: 100vh;
+            padding: 20px;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            /* استبدل المسار بصورة الحاويات الخاصة بك */
-            background: url('/images/containers-bg.jpg') no-repeat center center fixed;
-            background-size: cover;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* استبدال الخلفية الباهتة بتدرج فخم يتناسب مع المنظومة */
+            background: linear-gradient(135deg, var(--dark-bg) 0%, rgb(255, 255, 255) 100%);
+            font-family: 'Cairo', sans-serif;
+            color: #333;
         }
 
         .glass-card {
-            background: rgb(128, 128, 128);
+            background: var(--glass-white);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.3);
             border-radius: 20px;
             padding: 40px;
-            width: 400px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
             text-align: center;
-            color: white;
+            animation: fadeIn 0.8s ease-out;
         }
 
-        h2 { margin-bottom: 30px; font-weight: 300; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .brand-logo {
+            width: 100px;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        }
+
+        h2 { 
+            color: var(--primary-blue);
+            margin-bottom: 30px; 
+            font-weight: 700;
+            border-bottom: 2px solid var(--gold);
+            display: inline-block;
+            padding-bottom: 5px;
+        }
 
         input {
             width: 100%;
-            padding: 12px;
+            padding: 12px 15px;
             margin: 10px 0;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            color: #333;
             outline: none;
+            font-family: 'Cairo', sans-serif;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
         }
 
-        input::placeholder { color: #ddd; }
+        input:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 10px rgba(30, 58, 138, 0.1);
+        }
 
         button {
             width: 100%;
             padding: 12px;
             margin-top: 20px;
             border: none;
-            border-radius: 8px;
-            background: rgb(106, 106, 106); /* لون ذهبي يتناسب مع شعار الجمارك */
-            color: #1a1a1a;
-            font-weight: bold;
+            border-radius: 12px;
+            background: linear-gradient(45deg, var(--primary-blue), #1e40af);
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+            font-family: 'Cairo', sans-serif;
             cursor: pointer;
-            transition: 0.3s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3);
         }
 
-        button:hover { background: rgb(0, 64, 128); transform: translateY(-2px); }
+        button:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(30, 58, 138, 0.4);
+            filter: brightness(1.1);
+        }
 
-        .error { color: #ff6b6b; margin-bottom: 15px; }
+        .error { 
+            background-color: #fee2e2; 
+            color: #dc2626; 
+            padding: 10px; 
+            border-radius: 8px; 
+            margin-bottom: 15px; 
+            font-size: 14px;
+            border: 1px solid #fca5a5;
+        }
         
-        .footer-link { margin-top: 15px; font-size: 14px; }
-        .footer-link a { color: rgb(0, 64, 128); text-decoration: none; }
+        .footer-link { 
+            margin-top: 25px; 
+            font-size: 14px; 
+            color: #64748b;
+        }
+        
+        .footer-link a { 
+            color: var(--primary-blue); 
+            text-decoration: none; 
+            font-weight: 700;
+        }
+
+        .footer-link a:hover { 
+            color: var(--gold);
+            text-decoration: underline; 
+        }
+
+        /* التوافق مع الجوال */
+        @media (max-width: 480px) {
+            .glass-card { padding: 25px; margin: 10px; }
+            h2 { font-size: 20px; }
+        }
     </style>
 </head>
 <body>
 
 <div class="glass-card">
+    <!-- إضافة شعار الجمارك لإكمال الهوية -->
+    <img th:src="@{/images/cos2.png}" alt="Logo" class="brand-logo">
+    
     <h2>إنشاء حساب جديد</h2>
     
     <div th:if="${param.error}" class="error">اسم المستخدم موجود مسبقاً!</div>
 
     <form th:action="@{/register}" method="post">
-        <input type="text" name="username" placeholder="اسم المستخدم" required>
+        <input type="text" name="username" placeholder="اسم المستخدم" required autofocus>
         <input type="password" name="password" placeholder="كلمة المرور" required>
         <button type="submit">تسجيل الحساب</button>
     </form>
 
     <div class="footer-link">
-        لديك حساب بالفعل؟ <a href="/login">تسجيل الدخول</a>
+        لديك حساب بالفعل؟ <a th:href="@{/login}">تسجيل الدخول</a>
     </div>
 </div>
 

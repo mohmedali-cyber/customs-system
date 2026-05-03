@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.customs.customs_system.entity.*;
 import com.customs.customs_system.service.ShipmentService;
+import com.example.customs_systemm.entity.Shipment;
+import com.example.customs_systemm.entity.ShipmentStatus;
 import com.customs.customs_system.repository.ShipmentRepository;
 import java.util.List;
 
@@ -68,6 +70,46 @@ public class ShipmentController {
         }
     }
 
+    
+    
+    
+    
+    
+    @GetMapping("/fragment")
+    public String getShipmentsFragment(
+            @RequestParam(name = "status", required = false, defaultValue = "PENDING") String status,
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            Model model) {
+
+        try {
+            ShipmentStatus selectedStatus = ShipmentStatus.valueOf(status.toUpperCase());
+            PageRequest pageable = PageRequest.of(page, 7, Sort.by("id").descending());
+
+            Page<Shipment> shipmentPage;
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                shipmentPage = shipmentRepository.searchByStatus(keyword, selectedStatus, pageable);
+                model.addAttribute("keyword", keyword);
+            } else {
+                shipmentPage = shipmentRepository.findByStatusBasic(selectedStatus, pageable);
+            }
+
+            model.addAttribute("shipments", shipmentPage.getContent());
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", shipmentPage.getTotalPages());
+            model.addAttribute("currentStatus", status.toUpperCase());
+
+            // 🔥 أهم سطر
+            return "shipment-list :: tableFragment";
+
+        } catch (IllegalArgumentException e) {
+            return "shipment-list :: tableFragment";
+        }
+    }
+    
+    
+    
     // ==========================================
     // 🛡️ إعادة توجيه الروابط القديمة
     // ==========================================
