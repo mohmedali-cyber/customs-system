@@ -384,78 +384,84 @@
         <div class="date-value" th:text="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">2026-05-03</div>
     </div>
 </div>
-  
-    <div class="tabs-container">
-        <a th:href="@{/shipments(status='PENDING', keyword=${keyword})}" class="tab-link" th:classappend="${currentStatus == 'PENDING' ? 'active' : ''}">📥 قيد المراجعة</a>
-        <a th:href="@{/shipments(status='APPROVED', keyword=${keyword})}" class="tab-link" th:classappend="${currentStatus == 'APPROVED' ? 'active' : ''}">✅ معتمدة</a>
-        <a th:href="@{/shipments(status='REJECTED', keyword=${keyword})}" class="tab-link" th:classappend="${currentStatus == 'REJECTED' ? 'active' : ''}">❌ مرفوضة</a>
-    </div>
+  <!-- 1. التبويبات المعدلة لتعمل بدون تحديث صفحة -->
+<div class="tabs-container">
+    <a href="javascript:void(0)" 
+       th:onclick="'loadData(\'PENDING\', \'' + ${keyword} + '\', 0)'" 
+       class="tab-link" th:id="'tab-PENDING'"
+       th:classappend="${currentStatus == 'PENDING' ? 'active' : ''}">📥 قيد المراجعة</a>
+       
+    <a href="javascript:void(0)" 
+       th:onclick="'loadData(\'APPROVED\', \'' + ${keyword} + '\', 0)'" 
+       class="tab-link" th:id="'tab-APPROVED'"
+       th:classappend="${currentStatus == 'APPROVED' ? 'active' : ''}">✅ معتمدة</a>
+       
+    <a href="javascript:void(0)" 
+       th:onclick="'loadData(\'REJECTED\', \'' + ${keyword} + '\', 0)'" 
+       class="tab-link" th:id="'tab-REJECTED'"
+       th:classappend="${currentStatus == 'REJECTED' ? 'active' : ''}">❌ مرفوضة</a>
+</div>
 
-    <div class="workspace">
-        <form th:action="@{/shipments}" method="get" class="search-box" style="display: flex; gap: 10px; margin-bottom: 30px; background: #f8fafc; padding: 8px; border-radius: 15px;">
-            <input type="hidden" name="status" th:value="${currentStatus}"> 
-            <input type="text" name="keyword" th:value="${keyword}" style="flex: 1; border: none; background: transparent; padding: 10px; font-family: 'Cairo';" placeholder="ابحث برقم الحاوية أو المخلص...">
-            <button type="submit" style="background: var(--primary); color: rgb(255, 128, 0); border: none; padding: 10px 30px; border-radius: 12px; cursor: pointer; font-weight: 700;">بحث</button>
-        </form>
+<div class="workspace">
+    <!-- 2. نموذج البحث المعدل -->
+    <form onsubmit="event.preventDefault(); loadData(this.status.value, this.keyword.value, 0);" 
+          class="search-box" style="display: flex; gap: 10px; margin-bottom: 30px; background: #f8fafc; padding: 8px; border-radius: 15px;">
+        <input type="hidden" name="status" th:value="${currentStatus}"> 
+        <input type="text" name="keyword" th:value="${keyword}" style="flex: 1; border: none; background: transparent; padding: 10px; font-family: 'Cairo';" placeholder="ابحث برقم الحاوية أو المخلص...">
+        <button type="submit" style="background: var(--primary); color: rgb(255, 128, 0); border: none; padding: 10px 30px; border-radius: 12px; cursor: pointer; font-weight: 700;">بحث</button>
+    </form>
 
+    <!-- 3. المغلّف الذكي (هذا الجزء هو الذي سيتحدث فقط) -->
+    <div id="content-to-refresh">
         <div th:if="${not #lists.isEmpty(shipments)}">
             <table>
-              
-                  <thead class="custom-thead">
-            <tr>
-                <th>رقم الحاوية</th>
-                <th>المخلص الجمركي</th>
-                <th>الرمز الإحصائي</th>
-                <th>الحالة </th>
-                <th>العمليات</th>
-            </tr>
-       
+                <thead class="custom-thead">
+                    <tr>
+                        <th>رقم الحاوية</th>
+                        <th>المخلص الجمركي</th>
+                        <th>الرمز الإحصائي</th>
+                        <th>الحالة </th>
+                        <th>العمليات</th>
+                    </tr>
                 </thead>
                 <tbody>
-                <tr th:each="s : ${shipments}">
-    <!-- رقم الحاوية -->
-    <td data-label="رقم الحاوية">
-        <strong th:text="${s.containerNumber}" style="color: var(--primary3); font-size: 1.1rem;"></strong>
-    </td>
-
-    <!-- المخلص الجمركي -->
-    <td data-label="المخلص الجمركي" th:text="${s.customsbroker}" style="color: var(--primary3); font-size: 1.1rem;"></td>
-
-    <!-- الرمز الإحصائي -->
-    <td data-label="الرمز الإحصائي">
-        <span class="stat-badge" th:text="${s.statisticalCode}"></span>
-    </td>
-
-    <!-- الحالة والعمليات (تكملة الكود الخاص بك) -->
-    <td data-label="الحالة">
-        <div th:if="${s.status.name() == 'REJECTED'}">
-            <span style="color: var(--danger); font-weight: 700;">❌ مرفوضة</span><br>
-            <button class="btn-reason" th:onclick="showReason([[${s.rejectionReason}]])">🔎 عرض السبب</button>
-        </div>
-        <span th:if="${s.status.name() == 'APPROVED'}" style="color: var(--success); font-weight: 700;">✅ معتمدة</span>
-        <span th:if="${s.status.name() == 'PENDING'}" style="color: var(--text-muted); font-weight: 700;">⏳ قيد المراجعة</span>
-    </td>
-
-    <td data-label="العمليات">
-        <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
-            <a th:href="@{'/shipments/view-docs/' + ${s.id}}" class="btn-mini btn-view">عرض</a>
-            <th:block th:if="${s.status.name() == 'PENDING'}">
-                <button class="btn-mini btn-approve" th:onclick="'fireConfirm(' + ${s.id} + ', \'approve\')'">اعتماد</button>
-                <button class="btn-mini btn-reject" th:onclick="'fireConfirm(' + ${s.id} + ', \'reject\')'">رفض</button>
-            </th:block>
-            <button class="btn-delete" th:onclick="'fireDelete(' + ${s.id} + ')'">🗑️</button>
-        </div>
-    </td>
-</tr>
+                    <tr th:each="s : ${shipments}">
+                        <td data-label="رقم الحاوية">
+                            <strong th:text="${s.containerNumber}" style="color: var(--primary3); font-size: 1.1rem;"></strong>
+                        </td>
+                        <td data-label="المخلص الجمركي" th:text="${s.customsbroker}" style="color: var(--primary3); font-size: 1.1rem;"></td>
+                        <td data-label="الرمز الإحصائي">
+                            <span class="stat-badge" th:text="${s.statisticalCode}"></span>
+                        </td>
+                        <td data-label="الحالة">
+                            <div th:if="${s.status.name() == 'REJECTED'}">
+                                <span style="color: var(--danger); font-weight: 700;">❌ مرفوضة</span><br>
+                                <button class="btn-reason" th:onclick="showReason([[${s.rejectionReason}]])">🔎 عرض السبب</button>
+                            </div>
+                            <span th:if="${s.status.name() == 'APPROVED'}" style="color: var(--success); font-weight: 700;">✅ معتمدة</span>
+                            <span th:if="${s.status.name() == 'PENDING'}" style="color: var(--text-muted); font-weight: 700;">⏳ قيد المراجعة</span>
+                        </td>
+                        <td data-label="العمليات">
+                            <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
+                                <a th:href="@{'/shipments/view-docs/' + ${s.id}}" class="btn-mini btn-view">عرض</a>
+                                <th:block th:if="${s.status.name() == 'PENDING'}">
+                                    <button class="btn-mini btn-approve" th:onclick="'fireConfirm(' + ${s.id} + ', \'approve\')'">اعتماد</button>
+                                    <button class="btn-mini btn-reject" th:onclick="'fireConfirm(' + ${s.id} + ', \'reject\')'">رفض</button>
+                                </th:block>
+                                <button class="btn-delete" th:onclick="'fireDelete(' + ${s.id} + ')'">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
 
-            <!-- ترقيم الصفحات (بدون أي ضياع) -->
+            <!-- ترقيم الصفحات المعدل -->
             <div class="pagination-container" th:if="${totalPages > 1}">
                 <div class="page-info">صفحة <span th:text="${currentPage + 1}"></span> من <span th:text="${totalPages}"></span></div>
                 <ul class="pagination-list" style="margin:0; padding:0;">
                     <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}" style="list-style:none;">
-                        <a th:href="@{/shipments(status=${currentStatus}, keyword=${keyword}, page=${i})}" 
+                        <a href="javascript:void(0)" 
+                           th:onclick="'loadData(\'' + ${currentStatus} + '\', \'' + ${keyword} + '\', ' + ${i} + ')'"
                            th:text="${i + 1}" class="page-item-link" th:classappend="${i == currentPage} ? 'active' : ''"></a>
                     </li>
                 </ul>
@@ -466,6 +472,34 @@
              <h3 style="color: var(--text-muted2);">لا توجد سجلات حالياً</h3>
         </div>
     </div>
+</div>
+
+<!-- 4. السكريبت المسؤول عن الثبات (ضعه قبل نهاية وسم body) -->
+<script>
+function loadData(status, keyword, page) {
+    const url = `/shipments?status=${status}&keyword=${keyword}&page=${page}`;
+    
+    fetch(url)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newContent = doc.querySelector('#content-to-refresh').innerHTML;
+            
+            // تحديث الجدول فقط
+            document.querySelector('#content-to-refresh').innerHTML = newContent;
+            
+            // تحديث التبويبات النشطة (Active State)
+            document.querySelectorAll('.tab-link').forEach(tab => tab.classList.remove('active'));
+            const activeTab = document.getElementById('tab-' + status);
+            if(activeTab) activeTab.classList.add('active');
+
+            // تحديث الرابط في المتصفح بدون إعادة تحميل
+            window.history.pushState({}, '', url);
+        })
+        .catch(err => console.error("Error updating data:", err));
+}
+</script>
 
     <script>
         function smartBack() { window.location.href = '/'; }
