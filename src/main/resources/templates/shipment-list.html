@@ -386,34 +386,38 @@
 </div>
   <!-- 1. التبويبات المعدلة لتعمل بدون تحديث صفحة -->
 <div class="tabs-container">
+    <!-- استخدمنا الـ + لربط النصوص لضمان أمان المتغيرات -->
     <a href="javascript:void(0)" 
-   th:onclick="|loadData('PENDING', '${keyword}', 0)|" 
-   class="tab-link" id="tab-PENDING"
-   th:classappend="${currentStatus == 'PENDING' ? 'active' : ''}">📥 قيد المراجعة</a>
+       th:onclick="'loadData(\'PENDING\', \'' + ${keyword ?: ''} + '\', 0)'" 
+       class="tab-link" id="tab-PENDING"
+       th:classappend="${currentStatus == 'PENDING' ? 'active' : ''}">📥 قيد المراجعة</a>
 
-<a href="javascript:void(0)" 
-   th:onclick="|loadData('APPROVED', '${keyword}', 0)|" 
-   class="tab-link" id="tab-APPROVED"
-   th:classappend="${currentStatus == 'APPROVED' ? 'active' : ''}">✅ معتمدة</a>
+    <a href="javascript:void(0)" 
+       th:onclick="'loadData(\'APPROVED\', \'' + ${keyword ?: ''} + '\', 0)'" 
+       class="tab-link" id="tab-APPROVED"
+       th:classappend="${currentStatus == 'APPROVED' ? 'active' : ''}">✅ معتمدة</a>
 
-<a href="javascript:void(0)" 
-   th:onclick="|loadData('REJECTED', '${keyword}', 0)|" 
-   class="tab-link" id="tab-REJECTED"
-   th:classappend="${currentStatus == 'REJECTED' ? 'active' : ''}">❌ مرفوضة</a>
+    <a href="javascript:void(0)" 
+       th:onclick="'loadData(\'REJECTED\', \'' + ${keyword ?: ''} + '\', 0)'" 
+       class="tab-link" id="tab-REJECTED"
+       th:classappend="${currentStatus == 'REJECTED' ? 'active' : ''}">❌ مرفوضة</a>
 </div>
-
 <div class="workspace">
     <!-- 2. نموذج البحث المعدل -->
-    <form onsubmit="event.preventDefault(); loadData('[[${currentStatus}]]', this.keyword.value, 0);" 
-          class="search-box" style="display: flex; gap: 10px; margin-bottom: 30px; background: #f8fafc; padding: 8px; border-radius: 15px;">
-        <input type="hidden" name="status" th:value="${currentStatus}"> 
-        <input type="text" name="keyword" th:value="${keyword}" style="flex: 1; border: none; background: transparent; padding: 10px; font-family: 'Cairo';" placeholder="ابحث برقم الحاوية أو المخلص...">
-        <button type="submit" style="background: var(--primary); color: rgb(255, 128, 0); border: none; padding: 10px 30px; border-radius: 12px; cursor: pointer; font-weight: 700;">بحث</button>
-    </form>
+    <!--  -->
+<form th:onsubmit="|event.preventDefault(); loadData('${currentStatus}', this.keyword.value, 0);|" 
+      class="search-box" 
+      style="display: flex; gap: 10px; margin-bottom: 30px; background: #f8fafc; padding: 8px; border-radius: 15px;">
+    
+    <input type="hidden" name="status" th:value="${currentStatus}"> 
+    <input type="text" name="keyword" th:value="${keyword}" id="searchKeyword"
+           style="flex: 1; border: none; background: transparent; padding: 10px; font-family: 'Cairo';" 
+           placeholder="ابحث برقم الحاوية أو المخلص...">
+    <button type="submit" style="background: var(--primary); color: rgb(255, 128, 0); border: none; padding: 10px 30px; border-radius: 12px; cursor: pointer; font-weight: 700;">بحث</button>
+</form>
 
     <!-- 3. المغلّف الذكي (هذا الجزء هو الذي سيتحدث فقط) -->
-    <div id="content-to-refresh"> <!-- البداية هنا -->
-    
+    <div id="content-to-refresh">
     <div th:if="${not #lists.isEmpty(shipments)}">
             <table>
                 <thead class="custom-thead">
@@ -457,7 +461,7 @@
             </table>
 
             <!-- ترقيم الصفحات المعدل -->
-           <!-- كود الترقيم الخاص بك مع تعديل بسيط للروابط -->
+ <!-- ترقيم الصفحات -->
         <div class="pagination-container" th:if="${totalPages > 1}">
             <ul class="pagination-list">
                 <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
@@ -470,48 +474,85 @@
             </ul>
         </div>
     </div>
-        </div>
-        
-        <div th:if="${#lists.isEmpty(shipments)}" style="text-align: center; padding: 100px 0;">
-             <h3 style="color: var(--text-muted2);">لا توجد سجلات حالياً</h3>
-        </div>
+
+    <!-- هذا الجزء يجب أن يكون داخل content-to-refresh -->
+    <div th:if="${#lists.isEmpty(shipments)}" style="text-align: center; padding: 100px 0;">
+         <h3 style="color: var(--text-muted2);">لا توجد سجلات حالياً</h3>
     </div>
+</div>
 </div>
 
 <!-- 4. السكريبت المسؤول عن الثبات (ضعه قبل نهاية وسم body) -->
 <script>
 function loadData(status, keyword, page) {
-    // إظهار مؤشر تحميل بسيط (اختياري)
-    const container = document.querySelector('#content-to-refresh');
-    container.style.opacity = '0.5';
+    // 1. تحديد العناصر بدقة مع التحقق من وجودها
+    const container = document.getElementById('content-to-refresh');
+    if (!container) {
+        console.error("عنصر #content-to-refresh غير موجود في الصفحة");
+        return;
+    }
 
-    const url = `/shipments?status=${status}&keyword=${keyword || ''}&page=${page}`;
+    // 2. إظهار مؤشر تحميل بصري
+    container.style.opacity = '0.4';
+    container.style.pointerEvents = 'none'; // منع النقرات أثناء التحميل
 
-    fetch(url)
-        .then(response => response.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newContent = doc.querySelector('#content-to-refresh');
+    // 3. بناء الرابط مع معالجة الرموز الخاصة في كلمة البحث
+    const safeKeyword = encodeURIComponent(keyword || '');
+    const url = `/shipments?status=${status}&keyword=${safeKeyword}&page=${page}`;
+
+    // 4. تنفيذ الطلب
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest' // إشارة اختيارية للسيرفر أن الطلب AJAX
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('استجابة السيرفر غير سليمة');
+        return response.text();
+    })
+    .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newContent = doc.getElementById('content-to-refresh');
+        
+        if (newContent) {
+            // تحديث المحتوى
+            container.innerHTML = newContent.innerHTML;
             
-            if (newContent) {
-                container.innerHTML = newContent.innerHTML;
-                container.style.opacity = '1';
-                
-                // تحديث التبويبات برمجياً
-                document.querySelectorAll('.tab-link').forEach(link => link.classList.remove('active'));
-                const activeTab = document.getElementById('tab-' + status);
-                if (activeTab) activeTab.classList.add('active');
-
-                // تحديث الرابط في المتصفح
-                window.history.pushState({}, '', url);
+            // تحديث حالة التبويبات (Tabs)
+            document.querySelectorAll('.tab-link').forEach(link => link.classList.remove('active'));
+            const activeTab = document.getElementById('tab-' + status);
+            if (activeTab) {
+                activeTab.classList.add('active');
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            window.location.href = url; // إذا فشل الـ Ajax يحول الصفحة بالطريقة العادية
-        });
+
+            // تحديث الرابط في شريط العنوان بدون Refresh
+            window.history.pushState({ status, keyword, page }, '', url);
+        } else {
+            throw new Error('لم يتم العثور على محتوى جديد في الاستجابة');
+        }
+    })
+    .catch(error => {
+        console.error('Fetch Error:', error);
+        // في حالة الفشل النهائي، نلجأ للتحميل التقليدي لضمان استمرارية الخدمة
+        window.location.href = url;
+    })
+    .finally(() => {
+        // إعادة الصفحة لحالتها الطبيعية
+        container.style.opacity = '1';
+        container.style.pointerEvents = 'auto';
+    });
 }
+
+// إضافة مستمع لزر "الخلف" في المتصفح لضمان عمل التبويبات عند العودة
+window.onpopstate = function(event) {
+    if (event.state) {
+        const { status, keyword, page } = event.state;
+        loadData(status, keyword, page);
+    } else {
+        window.location.reload();
+    }
+};
 </script>
 
     <script>
