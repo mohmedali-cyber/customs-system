@@ -387,18 +387,18 @@
   <!-- 1. التبويبات المعدلة لتعمل بدون تحديث صفحة -->
 <div class="tabs-container">
     <a href="javascript:void(0)" 
-       th:onclick="'loadData(\'PENDING\', \'' + ${keyword} + '\', 0)'" 
-       class="tab-link" th:id="'tab-PENDING'"
+       th:onclick="|loadData('PENDING', '${keyword}', 0)|" 
+       class="tab-link" 
        th:classappend="${currentStatus == 'PENDING' ? 'active' : ''}">📥 قيد المراجعة</a>
        
     <a href="javascript:void(0)" 
-       th:onclick="'loadData(\'APPROVED\', \'' + ${keyword} + '\', 0)'" 
-       class="tab-link" th:id="'tab-APPROVED'"
+       th:onclick="|loadData('APPROVED', '${keyword}', 0)|" 
+       class="tab-link" 
        th:classappend="${currentStatus == 'APPROVED' ? 'active' : ''}">✅ معتمدة</a>
        
     <a href="javascript:void(0)" 
-       th:onclick="'loadData(\'REJECTED\', \'' + ${keyword} + '\', 0)'" 
-       class="tab-link" th:id="'tab-REJECTED'"
+       th:onclick="|loadData('REJECTED', '${keyword}', 0)|" 
+       class="tab-link" 
        th:classappend="${currentStatus == 'REJECTED' ? 'active' : ''}">❌ مرفوضة</a>
 </div>
 
@@ -412,8 +412,9 @@
     </form>
 
     <!-- 3. المغلّف الذكي (هذا الجزء هو الذي سيتحدث فقط) -->
-    <div id="content-to-refresh">
-        <div th:if="${not #lists.isEmpty(shipments)}">
+    <div id="content-to-refresh"> <!-- البداية هنا -->
+    
+    <div th:if="${not #lists.isEmpty(shipments)}">
             <table>
                 <thead class="custom-thead">
                     <tr>
@@ -456,16 +457,19 @@
             </table>
 
             <!-- ترقيم الصفحات المعدل -->
-            <div class="pagination-container" th:if="${totalPages > 1}">
-                <div class="page-info">صفحة <span th:text="${currentPage + 1}"></span> من <span th:text="${totalPages}"></span></div>
-                <ul class="pagination-list" style="margin:0; padding:0;">
-                    <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}" style="list-style:none;">
-                        <a href="javascript:void(0)" 
-                           th:onclick="'loadData(\'' + ${currentStatus} + '\', \'' + ${keyword} + '\', ' + ${i} + ')'"
-                           th:text="${i + 1}" class="page-item-link" th:classappend="${i == currentPage} ? 'active' : ''"></a>
-                    </li>
-                </ul>
-            </div>
+           <!-- كود الترقيم الخاص بك مع تعديل بسيط للروابط -->
+        <div class="pagination-container" th:if="${totalPages > 1}">
+            <ul class="pagination-list">
+                <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                    <a href="javascript:void(0)" 
+                       th:onclick="|loadData('${currentStatus}', '${keyword}', ${i})|"
+                       th:text="${i + 1}" 
+                       class="page-item-link" 
+                       th:classappend="${i == currentPage} ? 'active' : ''"></a>
+                </li>
+            </ul>
+        </div>
+    </div>
         </div>
         
         <div th:if="${#lists.isEmpty(shipments)}" style="text-align: center; padding: 100px 0;">
@@ -477,27 +481,43 @@
 <!-- 4. السكريبت المسؤول عن الثبات (ضعه قبل نهاية وسم body) -->
 <script>
 function loadData(status, keyword, page) {
-    const url = `/shipments?status=${status}&keyword=${keyword}&page=${page}`;
-    
+    // 1. تحديد الرابط المطلوب
+    const url = `/shipments?status=${status}&keyword=${keyword || ''}&page=${page}`;
+
+    // 2. طلب البيانات بهدوء من السيرفر
     fetch(url)
-        .then(response => response.text())
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.text();
+        })
         .then(html => {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
-            const newContent = doc.querySelector('#content-to-refresh').innerHTML;
             
-            // تحديث الجدول فقط
-            document.querySelector('#content-to-refresh').innerHTML = newContent;
+            // 3. استبدال محتوى الجدول القديم بالجديد
+            const newContent = doc.querySelector('#content-to-refresh');
+            const currentContent = document.querySelector('#content-to-refresh');
             
-            // تحديث التبويبات النشطة (Active State)
-            document.querySelectorAll('.tab-link').forEach(tab => tab.classList.remove('active'));
-            const activeTab = document.getElementById('tab-' + status);
-            if(activeTab) activeTab.classList.add('active');
+            if (newContent && currentContent) {
+                currentContent.innerHTML = newContent.innerHTML;
+            }
 
-            // تحديث الرابط في المتصفح بدون إعادة تحميل
+            // 4. تحديث روابط التبويبات (Active State)
+            document.querySelectorAll('.tab-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.textContent.includes(status === 'PENDING' ? 'مراجعة' : status === 'APPROVED' ? 'معتمدة' : 'مرفوضة')) {
+                    link.classList.add('active');
+                }
+            });
+
+            // 5. تحديث الرابط في المتصفح شكلياً
             window.history.pushState({}, '', url);
         })
-        .catch(err => console.error("Error updating data:", err));
+        .catch(error => {
+            console.error('Error:', error);
+            // في حالة الفشل، جرب الطريقة العادية كخطة بديلة
+            window.location.href = url;
+        });
 }
 </script>
 
