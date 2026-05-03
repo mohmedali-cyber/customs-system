@@ -387,24 +387,24 @@
   <!-- 1. التبويبات المعدلة لتعمل بدون تحديث صفحة -->
 <div class="tabs-container">
     <a href="javascript:void(0)" 
-       th:onclick="|loadData('PENDING', '${keyword}', 0)|" 
-       class="tab-link" 
-       th:classappend="${currentStatus == 'PENDING' ? 'active' : ''}">📥 قيد المراجعة</a>
-       
-    <a href="javascript:void(0)" 
-       th:onclick="|loadData('APPROVED', '${keyword}', 0)|" 
-       class="tab-link" 
-       th:classappend="${currentStatus == 'APPROVED' ? 'active' : ''}">✅ معتمدة</a>
-       
-    <a href="javascript:void(0)" 
-       th:onclick="|loadData('REJECTED', '${keyword}', 0)|" 
-       class="tab-link" 
-       th:classappend="${currentStatus == 'REJECTED' ? 'active' : ''}">❌ مرفوضة</a>
+   th:onclick="|loadData('PENDING', '${keyword}', 0)|" 
+   class="tab-link" id="tab-PENDING"
+   th:classappend="${currentStatus == 'PENDING' ? 'active' : ''}">📥 قيد المراجعة</a>
+
+<a href="javascript:void(0)" 
+   th:onclick="|loadData('APPROVED', '${keyword}', 0)|" 
+   class="tab-link" id="tab-APPROVED"
+   th:classappend="${currentStatus == 'APPROVED' ? 'active' : ''}">✅ معتمدة</a>
+
+<a href="javascript:void(0)" 
+   th:onclick="|loadData('REJECTED', '${keyword}', 0)|" 
+   class="tab-link" id="tab-REJECTED"
+   th:classappend="${currentStatus == 'REJECTED' ? 'active' : ''}">❌ مرفوضة</a>
 </div>
 
 <div class="workspace">
     <!-- 2. نموذج البحث المعدل -->
-    <form onsubmit="event.preventDefault(); loadData(this.status.value, this.keyword.value, 0);" 
+    <form onsubmit="event.preventDefault(); loadData('[[${currentStatus}]]', this.keyword.value, 0);" 
           class="search-box" style="display: flex; gap: 10px; margin-bottom: 30px; background: #f8fafc; padding: 8px; border-radius: 15px;">
         <input type="hidden" name="status" th:value="${currentStatus}"> 
         <input type="text" name="keyword" th:value="${keyword}" style="flex: 1; border: none; background: transparent; padding: 10px; font-family: 'Cairo';" placeholder="ابحث برقم الحاوية أو المخلص...">
@@ -481,42 +481,35 @@
 <!-- 4. السكريبت المسؤول عن الثبات (ضعه قبل نهاية وسم body) -->
 <script>
 function loadData(status, keyword, page) {
-    // 1. تحديد الرابط المطلوب
+    // إظهار مؤشر تحميل بسيط (اختياري)
+    const container = document.querySelector('#content-to-refresh');
+    container.style.opacity = '0.5';
+
     const url = `/shipments?status=${status}&keyword=${keyword || ''}&page=${page}`;
 
-    // 2. طلب البيانات بهدوء من السيرفر
     fetch(url)
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.text();
-        })
+        .then(response => response.text())
         .then(html => {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
-            
-            // 3. استبدال محتوى الجدول القديم بالجديد
             const newContent = doc.querySelector('#content-to-refresh');
-            const currentContent = document.querySelector('#content-to-refresh');
             
-            if (newContent && currentContent) {
-                currentContent.innerHTML = newContent.innerHTML;
+            if (newContent) {
+                container.innerHTML = newContent.innerHTML;
+                container.style.opacity = '1';
+                
+                // تحديث التبويبات برمجياً
+                document.querySelectorAll('.tab-link').forEach(link => link.classList.remove('active'));
+                const activeTab = document.getElementById('tab-' + status);
+                if (activeTab) activeTab.classList.add('active');
+
+                // تحديث الرابط في المتصفح
+                window.history.pushState({}, '', url);
             }
-
-            // 4. تحديث روابط التبويبات (Active State)
-            document.querySelectorAll('.tab-link').forEach(link => {
-                link.classList.remove('active');
-                if (link.textContent.includes(status === 'PENDING' ? 'مراجعة' : status === 'APPROVED' ? 'معتمدة' : 'مرفوضة')) {
-                    link.classList.add('active');
-                }
-            });
-
-            // 5. تحديث الرابط في المتصفح شكلياً
-            window.history.pushState({}, '', url);
         })
         .catch(error => {
             console.error('Error:', error);
-            // في حالة الفشل، جرب الطريقة العادية كخطة بديلة
-            window.location.href = url;
+            window.location.href = url; // إذا فشل الـ Ajax يحول الصفحة بالطريقة العادية
         });
 }
 </script>
