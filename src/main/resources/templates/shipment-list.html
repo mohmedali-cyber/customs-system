@@ -16,11 +16,13 @@
             --accent-glow: rgba(37, 99, 235, 0.15);
             --bg-body: rgb(255, 255, 255);
             --text-main: rgb(255, 169, 83);
-            --text-muted: rgb(255, 128, 0);
+            --text-muted: rgb(0, 255, 64);
             --text-muted4: rgb(255, 255, 255);
             --white: rgb(192, 192, 192);
-            --success: #059669;
+            --success: #059669;      
             --success1: rgb(255, 255, 255);
+            --success6: rgb(170, 85, 0);
+
             --danger: #dc2626;
             --shadow-md: 0 10px 25px -5px rgb(255, 197, 138);
             --radius: 16px;
@@ -61,17 +63,36 @@
         }
         .portal-btn:hover { background: var(--accent); }
 
-        .tabs-container { display: flex; gap: 12px; margin-bottom: -1px; padding: 0 20px; }
+.tabs-container { 
+    display: flex; 
+    gap: 15px; /* زدنا المسافة بين الأزرار قليلاً */
+    margin-bottom: -1px; 
+    padding: 0 20px; 
+    align-items: flex-end; /* لضمان محاذاة الأزرار من الأسفل */
+}
+
 .tab-link {
-    padding: 22px 40px;
+    /* تكبير الحشوة الداخلية (الطول والعرض) */
+    padding: 20px 55px; 
     background: rgb(75, 75, 75);
     border-radius: 20px 18px 0 0;
-    color: var(--text-muted);
-    font-weight:900;
+    color: var(--success1);
+    
+    /* تكبير حجم الخط بشكل ملحوظ */
+    font-size: 1.5rem; 
+    /* ملاحظة: أقصى قيمة عملية لـ font-weight هي 900 */
+    font-weight: 900; 
+    
     transition: 0.3s;
     border: none;
     cursor: pointer;
     position: relative;
+    
+    /* لضمان تنسيق الأيقونات مع النص */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
 }
 
 /* 🔥 التاب النشط */
@@ -83,10 +104,13 @@
     0% {
         box-shadow: 0 0 5px rgba(255,140,0,0.5);
     }
+    0% {
+        box-shadow: 0 0 7px rgb(0, 255, 0);
+    }
     50% {
         box-shadow: 
-            0 0 20px rgba(255,140,0,0.8),
-            0 0 40px rgba(255,140,0,0.6);
+            0 0 20px rgb(196, 98, 0),
+            0 0 40px rgb(0, 0, 0);
     }
     100% {
         box-shadow: 0 0 px rgba(255,140,0,0.5);
@@ -250,7 +274,7 @@
     padding: 10px 20px;
     /* يمكنك إضافة الوانك الملكية هنا */
     background: linear-gradient(135deg, rgb(255, 143, 32) 0%, rgb(31, 31, 31) 100%);
-    color: white;
+    color: rgb(255, 255, 255);
     border-radius: 8px;
     text-decoration: none;
     transition: transform 0.3s ease;
@@ -306,7 +330,7 @@
 <button class="tab-link"
         th:classappend="${currentStatus == 'PENDING'} ? 'active' : ''"
         onclick="loadTab('PENDING', this)">
-    📥 قيد المراجعة
+     قيد المراجعة
 </button>
 
 <button class="tab-link"
@@ -322,12 +346,19 @@
 </button>
 </div>
 
+
 <div class="workspace">
 
     <form th:action="@{/shipments}" method="get" class="search-box"
-          style="display: flex; gap: 10px; margin-bottom: 30px; background: #f8fafc; padding: 8px; border-radius: 15px;">
+          style="display: flex; gap: 10px; margin-bottom: 30px; background: rgb(212, 212, 212); padding: 8px; border-radius: 15px;">
         <input type="hidden" name="status" th:value="${currentStatus}"> 
-        <input type="text" name="keyword" th:value="${keyword}" style="flex: 1; border: none; background: transparent; padding: 10px; font-family: 'Cairo';" placeholder="ابحث برقم الحاوية أو المخلص...">
+       
+        <input type="text" name="keyword" th:value="${keyword}" 
+       style="flex: 1; border: 1px solid rgb(179, 89, 0); background: rgba(255, 255, 255, 0.1); 
+              backdrop-filter: blur(10px); padding: 12px 20px; border-radius: 12px; 
+              color: var(--primary3); font-family: 'Cairo'; outline: none; transition: 0.3s;" 
+       placeholder="🔍 ابحث برقم الحاوية أو المخلص...">
+       
         <button type="submit" style="background: var(--primary); color: rgb(255, 128, 0); border: none; padding: 10px 30px; border-radius: 12px; cursor: pointer; font-weight: 700;">بحث</button>
     </form>
 
@@ -357,7 +388,7 @@
                                 <button class="btn-reason" th:onclick="showReason([[${s.rejectionReason}]])">🔎 عرض السبب</button>
                             </div>
 
-                            <span th:if="${s.status.name() == 'APPROVED'}" style="color: var(--success1); font-weight: 700;">✅ معتمدة</span>
+                            <span th:if="${s.status.name() == 'APPROVED'}" style="color: var(--success6); font-weight: 700;">✅ معتمدة</span>
                             <span th:if="${s.status.name() == 'PENDING'}" style="color: var(--text-muted4); font-weight: 700;">⏳ قيد المراجعة</span>
                         </td>
 
