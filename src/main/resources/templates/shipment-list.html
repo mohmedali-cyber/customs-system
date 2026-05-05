@@ -189,9 +189,12 @@
     width: 170px; 
     height: auto;
     /* استدعاء الأنميشن الجديد المدمج */
-    animation: flutter-float 43s infinite ease-in-out;
+    animation: flutter-float 41s infinite ease-in-out;
     /* دمج ظلال قوية وواضحة لتعزيز الفخامة */
     filter: drop-shadow(0 15px 35px rgba(255, 168, 81, 0.6));
+
+    animation: soft-float 21s infinite ease-in-out;
+
 
     will-change: transform; 
 }
@@ -216,15 +219,15 @@
     }
     25% {
         /* ميلان خفيف لليسار أثناء الصعود */
-        transform: translateY(-1px) rotate(2deg);
+        transform: translateY(-1px) rotate(4deg);
     }
     50% {
         /* أقصى ارتفاع مع ميلان لليمين */
-        transform: translateY(-20px) rotate(1.5deg);
+        transform: translateY(-20px) rotate(40.5deg);
     }
     75% {
         /* بداية النزول مع ميلان عكسي */
-        transform: translateY(-10px) rotate(-0.5deg);
+        transform: translateY(-10px) rotate(-0.15deg);
     }
 }
 
