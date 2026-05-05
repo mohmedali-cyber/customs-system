@@ -186,12 +186,14 @@
 }
 
 .moving-logo-float {
-    width: 200px; 
+    width: 170px; 
     height: auto;
-    /* تم استبدال الرفرفة بالطفو الانسيابي */
-    animation: soft-float 43s infinite ease-in-out;
-    filter: drop-shadow(0 15px 25px rgb(255, 168, 81));
-    will-change: transform; /* لتحسين الأداء ومنع الثقل */
+    /* استدعاء الأنميشن الجديد المدمج */
+    animation: flutter-float 43s infinite ease-in-out;
+    /* دمج ظلال قوية وواضحة لتعزيز الفخامة */
+    filter: drop-shadow(0 15px 35px rgba(255, 168, 81, 0.6));
+
+    will-change: transform; 
 }
 
 /* أنميشن الطفو الانسيابي (أخف وأجمل) */
@@ -207,6 +209,26 @@
         filter: drop-shadow(0 20px 40px rgb(255, 153, 51));
     }
 }
+/* الأنميشن المدمج: طفو + رفرفة خفيفة */
+@keyframes flutter-float {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    25% {
+        /* ميلان خفيف لليسار أثناء الصعود */
+        transform: translateY(-1px) rotate(2deg);
+    }
+    50% {
+        /* أقصى ارتفاع مع ميلان لليمين */
+        transform: translateY(-20px) rotate(1.5deg);
+    }
+    75% {
+        /* بداية النزول مع ميلان عكسي */
+        transform: translateY(-10px) rotate(-0.5deg);
+    }
+}
+
+
     </style>
 
 
@@ -301,7 +323,7 @@
         <img th:src="@{/images/bbp.png}" class="halo-logo-hero" alt="الخلفية" />
         
         <div class="floating-overlay">
-            <img th:src="@{/images/dr.png}" class="moving-logo-float" alt="شعار متحرك" />
+            <img th:src="@{/images/cm.png}" class="moving-logo-float" alt="شعار متحرك" />
         </div>
     </div>
 </div>
