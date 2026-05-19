@@ -244,4 +244,77 @@ public class ShipmentService {
         shipmentRepository.deleteById(id);
         System.out.println("🗑️ تم حذف الشحنة رقم: " + id);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+//    @Transactional
+//    public Shipment updateShipment(Long id, Shipment updatedData) {
+//        Shipment existing = shipmentRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Shipment not found"));
+//
+//        // تحديث البيانات الأساسية فقط
+//        existing.setCustomsbroker(updatedData.getCustomsbroker());
+//        existing.setBrokerPhone(updatedData.getBrokerPhone());
+//        existing.setContainerNumber(updatedData.getContainerNumber());
+//        existing.setStatisticalCode(updatedData.getStatisticalCode());
+//        
+//        // ملاحظة: لا نغير الـ createdAt ولا الـ Status إلا لو أردت ذلك يدوياً
+//        return shipmentRepository.save(existing);
+//    }
+    @Transactional
+    public Shipment updateShipment(Long id, Shipment updatedData) {
+        Shipment existing = shipmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Shipment not found"));
+
+        // 1. تحديث البيانات الأساسية القادمة من شاشة التعديل
+        existing.setCustomsbroker(updatedData.getCustomsbroker());
+        existing.setBrokerPhone(updatedData.getBrokerPhone());
+        existing.setContainerNumber(updatedData.getContainerNumber());
+        existing.setStatisticalCode(updatedData.getStatisticalCode());
+        
+        // 2. الفحص الذكي: إذا كانت الشحنة مرفوضة سابقاً، نعيدها قيد المراجعة وننظف سبب الرفض
+        if (existing.getStatus() == ShipmentStatus.REJECTED) {
+            existing.setStatus(ShipmentStatus.PENDING); // تتحول تلقائياً إلى (قيد المراجعة) في الـ Tabs
+            existing.setRejectionReason(null);          // مسح سبب الرفض القديم حتى لا يسبب ارتباكاً للمراجع
+        }
+
+        // ملاحظة: الـ createdAt لن يتأثر وسيبقى ثابتاً كما هو في قاعدة البيانات
+        return shipmentRepository.save(existing);
+    }
+    
+    
+    
+    
+    public List<Shipment> findByStatus(ShipmentStatus status) {
+        return shipmentRepository.findByStatus(status);
+    }
+    
+    
+    
+    
+    
+    
+//    public Shipment getShipmentByAnyId(String query) {
+//        // محاولة البحث برقم الحاوية أولاً ثم الرمز الإحصائي
+//        return shipmentRepository.findByContainerNumber(query)
+//                .orElseGet(() -> shipmentRepository.findByStatisticalCode(query)
+//                .orElse(null));
+//    }
+ // تعديل دالة البحث لتشمل الجميع
+    public Shipment getShipmentByAnyId(String query) {
+        // نستخدم findAllByAnyId لضمان جلب الشحنة مهما كانت حالتها
+        // الـ .trim() تمسح المسافات الزائدة التي قد تسبب فشل البحث
+        return shipmentRepository.findAllByAnyId(query.trim()).orElse(null);
+    }
+
 }

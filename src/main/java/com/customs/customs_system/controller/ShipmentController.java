@@ -4,14 +4,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.customs.customs_system.entity.*;
 import com.customs.customs_system.service.ShipmentService;
+
 import com.customs.customs_system.repository.ShipmentRepository;
 import java.util.List;
+
 
 @Controller
 @RequestMapping("/shipments")
@@ -73,6 +76,9 @@ public class ShipmentController {
     
     
     
+    
+    
+    
     @GetMapping("/fragment")
     public String getShipmentsFragment(
             @RequestParam(name = "status", required = false, defaultValue = "PENDING") String status,
@@ -105,6 +111,11 @@ public class ShipmentController {
             return "shipment-list :: tableFragment";
         }
     }
+    
+    
+    
+    
+    
     
     
     
@@ -202,4 +213,232 @@ public class ShipmentController {
     public List<Shipment> getAll() {
         return shipmentService.getAllShipments();
     }
+
+
+
+
+
+
+
+
+    
+
+
+
+
+ // 1. عرض صفحة التعديل المنفردة
+    @GetMapping("/edit/{id}")
+    public String showEditForm(@PathVariable Long id, Model model) {
+        Shipment shipment = shipmentService.getShipmentById(id);
+        if (shipment == null) return "redirect:/shipments";
+        
+        model.addAttribute("shipment", shipment);
+        // نرسل المستندات الحالية لعرضها في الصفحة
+        model.addAttribute("existingDocs", shipment.getDocuments());
+        return "shipment-edit"; // اسم ملف الـ HTML الجديد
+    }
+
+//    // 2. استقبال التحديث (POST)
+//    @PostMapping("/update/{id}")
+//    @ResponseBody
+//    public Shipment updateShipment(@PathVariable Long id,
+//                                   @ModelAttribute Shipment shipment,
+//                                   @RequestParam(value="BOL_files", required=false) MultipartFile[] bolFiles,
+//                                   @RequestParam(value="DO_files", required=false) MultipartFile[] doFiles,
+//                                   @RequestParam(value="OC_files", required=false) MultipartFile[] ocFiles,
+//                                   @RequestParam(value="INV_files", required=false) MultipartFile[] invFiles,
+//                                   @RequestParam(value="PL_files", required=false) MultipartFile[] plFiles,
+//                                   @RequestParam(value="AL_files", required=false) MultipartFile[] alFiles,
+//                                   @RequestParam(value="CD_files", required=false) MultipartFile[] cdFiles,
+//                                   @RequestParam(value="BI_files", required=false) MultipartFile[] biFiles,
+//                                   @RequestParam(value="SI_files", required=false) MultipartFile[] siFiles) {
+//
+//        // تنفيذ التحديث في الـ Service
+//        Shipment updated = shipmentService.updateShipment(id, shipment);
+//
+//        // معالجة الملفات الجديدة فقط إذا تم رفع شيء
+//        shipmentService.processDocumentsAsync(
+//                updated.getId(), bolFiles, doFiles, ocFiles, invFiles, 
+//                plFiles, alFiles, cdFiles, biFiles, siFiles
+//        );
+//
+//        return updated;
+//    }
+ 
+    
+    // تعديل دالة التحديث لتكون متوافقة مع الفورم العادي
+//    @PostMapping("/update/{id}")
+//    public String updateShipment(@PathVariable Long id,
+//                                   @ModelAttribute Shipment shipment,
+//                                   @RequestParam(value="BOL_files", required=false) MultipartFile[] bolFiles,
+//                                   @RequestParam(value="DO_files", required=false) MultipartFile[] doFiles,
+//                                   @RequestParam(value="OC_files", required=false) MultipartFile[] ocFiles,
+//                                   @RequestParam(value="INV_files", required=false) MultipartFile[] invFiles,
+//                                   @RequestParam(value="PL_files", required=false) MultipartFile[] plFiles,
+//                                   @RequestParam(value="AL_files", required=false) MultipartFile[] alFiles,
+//                                   @RequestParam(value="CD_files", required=false) MultipartFile[] cdFiles,
+//                                   @RequestParam(value="BI_files", required=false) MultipartFile[] biFiles,
+//                                   @RequestParam(value="SI_files", required=false) MultipartFile[] siFiles) {
+//
+//        // 1. ربط الـ ID القادم من الرابط بالكائن لضمان التحديث وليس الإضافة
+//        shipment.setId(id);
+//
+//        // 2. تنفيذ التحديث في الـ Service
+//        Shipment updated = shipmentService.updateShipment(id, shipment);
+//
+//        // 3. معالجة الملفات (إذا وجدت)
+//        shipmentService.processDocumentsAsync(
+//                updated.getId(), bolFiles, doFiles, ocFiles, invFiles, 
+//                plFiles, alFiles, cdFiles, biFiles, siFiles
+//        );
+//
+//        // 4. التوجيه لصفحة القائمة بعد النجاح بدلاً من إرجاع كائن JSON
+//        return "redirect:/shipments?status=PENDING";
+//    }
+
+    @PostMapping("/update/{id}")
+    @ResponseBody // أضف هذه ليتعامل معها الـ Fetch في الصفحة
+    public ResponseEntity<?> updateShipment(@PathVariable Long id,
+                                   @ModelAttribute Shipment shipment,
+                                   @RequestParam(value="BOL_files", required=false) MultipartFile[] bolFiles,
+                                   @RequestParam(value="DO_files", required=false) MultipartFile[] doFiles,
+                                   @RequestParam(value="OC_files", required=false) MultipartFile[] ocFiles,
+                                   @RequestParam(value="INV_files", required=false) MultipartFile[] invFiles,
+                                   @RequestParam(value="PL_files", required=false) MultipartFile[] plFiles,
+                                   @RequestParam(value="AL_files", required=false) MultipartFile[] alFiles,
+                                   @RequestParam(value="CD_files", required=false) MultipartFile[] cdFiles,
+                                   @RequestParam(value="BI_files", required=false) MultipartFile[] biFiles,
+                                   @RequestParam(value="SI_files", required=false) MultipartFile[] siFiles) {
+
+        shipment.setId(id);
+        Shipment updated = shipmentService.updateShipment(id, shipment);
+
+        // معالجة الملفات الجديدة بنفس منطق الإضافة
+        shipmentService.processDocumentsAsync(
+                updated.getId(), bolFiles, doFiles, ocFiles, invFiles, 
+                plFiles, alFiles, cdFiles, biFiles, siFiles
+        );
+
+        return ResponseEntity.ok(updated);
+    }
+    
+
+
+
+
+
+
+    @GetMapping("/edit-list")
+    public String showEditList(Model model) {
+        // استدعاء الدالة لجلب الشحنات "قيد الانتظار" فقط
+        List<Shipment> pendingShipments = shipmentService.findByStatus(ShipmentStatus.PENDING);
+        model.addAttribute("shipments", pendingShipments);
+        return "shipment-edit-list"; 
+    }
+
+    @GetMapping("/api/search")
+    @ResponseBody
+    public ResponseEntity<?> searchShipment(@RequestParam String q) {
+        Shipment shipment = shipmentService.getShipmentByAnyId(q.trim());
+        
+        if (shipment != null) {
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            response.put("id", shipment.getId());
+            response.put("customsbroker", shipment.getCustomsbroker());
+            response.put("brokerPhone", shipment.getBrokerPhone());
+            response.put("containerNumber", shipment.getContainerNumber());
+            response.put("statisticalCode", shipment.getStatisticalCode());
+            
+            // 🌟 بناء مصفوفة مستندات مخصصة تضمن وصول الـ ID والـ fileUrl بوضوح تام للـ JS
+            java.util.List<java.util.Map<String, Object>> docsList = new java.util.ArrayList<>();
+            
+            if (shipment.getDocuments() != null) {
+                for (Document doc : shipment.getDocuments()) {
+                    if (doc.getType() != null) {
+                        java.util.Map<String, Object> dMap = new java.util.HashMap<>();
+                        
+                        // تمرير الـ ID الخاص بالمستند كـ Long بشكل صريح
+                        dMap.put("id", doc.getId()); 
+                        
+                        // تمرير الرابط الخاص بالمستند
+                        dMap.put("fileUrl", doc.getFileUrl() != null ? doc.getFileUrl() : "");
+                        
+                        // تمرير نوع المستند (Enum اسم كامل) ليقوم الجافا سكريبت الحالي بـ ترجمته
+                        dMap.put("type", doc.getType().toString());
+                        
+                        docsList.add(dMap);
+                    }
+                }
+            }
+            
+            // استبدال قائمة المستندات الأصلية بالقائمة المخصصة الصريحة
+            response.put("documents", docsList); 
+            
+            return ResponseEntity.ok(response);
+        }
+        return ResponseEntity.notFound().build();
+    }
+    
+
+    
+    
+    
+    
+    
+ // ==========================================
+ // 🗑️ دالة حذف مستند فردي من الأرشيف أثناء التعديل
+ // ==========================================
+    @DeleteMapping("/api/documents/{docId}")
+    @ResponseBody
+    public ResponseEntity<?> deleteDocumentFromArchive(@PathVariable Long docId) {
+        try {
+            // 1. جلب الشحنة المرتبطة بهذا المستند أولاً لضمان تحديث الـ Cache في الـ Hibernate
+            // نقوم بالبحث في كل الشحنات للتأكد من وجود المستند
+            java.util.Optional<Shipment> shipmentOpt = shipmentRepository.findAll().stream()
+                    .filter(s -> s.getDocuments() != null && s.getDocuments().stream().anyMatch(d -> d.getId().equals(docId)))
+                    .findFirst();
+
+            if (shipmentOpt.isPresent()) {
+                Shipment shipment = shipmentOpt.get();
+                
+                // 2. إزالة المستند من قائمة المستندات الخاصة بالشحنة في الجافا (لتفعيل الـ orphanRemoval = true)
+                shipment.getDocuments().removeIf(doc -> doc.getId().equals(docId));
+                
+                // 3. حفظ الشحنة بعد التعديل، وبسبب وجود cascade و orphanRemoval سيقوم الـ JPA بحذف المستند تلقائياً من الـ DB
+                shipmentRepository.save(shipment);
+
+                return ResponseEntity.ok(java.util.Map.of("success", true, "message", "تم حذف المستند بنجاح"));
+            } else {
+                return ResponseEntity.status(404).body(java.util.Map.of("success", false, "message", "المستند غير موجود أو تم حذفه مسبقاً"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace(); // لطباعة الخطأ في الـ Console لمعرفته إن حدث
+            return ResponseEntity.status(500).body(java.util.Map.of("success", false, "message", "حدث خطأ أثناء الحذف: " + e.getMessage()));
+        }
+    }
+    
+    //
+//    @GetMapping("/api/search")
+//    @ResponseBody
+//    public ResponseEntity<?> searchShipment(@RequestParam String q) {
+//        Shipment shipment = shipmentService.getShipmentByAnyId(q.trim());
+//        
+//        if (shipment != null) {
+//            java.util.Map<String, Object> response = new java.util.HashMap<>();
+//            response.put("id", shipment.getId());
+//            response.put("status", shipment.getStatus().toString()); 
+//            response.put("customsbroker", shipment.getCustomsbroker());
+//            response.put("brokerPhone", shipment.getBrokerPhone());
+//            response.put("containerNumber", shipment.getContainerNumber());
+//            response.put("statisticalCode", shipment.getStatisticalCode());
+//            
+//            // 🔥 إضافة المستندات عشان الـ JS يقدر يعرض الصور القديمة
+//            response.put("documents", shipment.getDocuments()); 
+//            
+//            return ResponseEntity.ok(response);
+//        }
+//        return ResponseEntity.notFound().build();
+//    }
+//    
+
 }
