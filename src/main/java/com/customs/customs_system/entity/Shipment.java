@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.example.customs_systemm.entity.Document;
-import com.example.customs_systemm.entity.ShipmentStatus;
+import com.customs.customs_system.entity.ShipmentStatus;
+import com.customs.customs_system.entity.Document;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
