@@ -34,10 +34,8 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
                                   @Param("status") ShipmentStatus status, 
                                   Pageable pageable);
 
-    // ✅ تم تصحيح المسار هنا ليتوافق مع مشروعك الحالي
-    @Query("SELECT s FROM Shipment s WHERE s.status IN " +
-           "(com.example.customs_systemm.entity.ShipmentStatus.APPROVED, " +
-           "com.example.customs_systemm.entity.ShipmentStatus.COMPLETED)")
+    // 🌟 تم التعديل هنا: استخدام اسم الـ Enum مباشرةً والاعتماد على الـ Import الأساسي
+    @Query("SELECT s FROM Shipment s WHERE s.status IN (ShipmentStatus.APPROVED, ShipmentStatus.COMPLETED)")
     Page<Shipment> findArchivedBasic(Pageable pageable);
 
     @Modifying
@@ -46,10 +44,8 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
 
     long countByStatus(ShipmentStatus status);
 
-    // ✅ تم تصحيح المسار هنا أيضاً ليتوافق مع مشروعك المحلي
-    @Query("SELECT COUNT(s) FROM Shipment s WHERE s.status IN " +
-           "(com.example.customs_systemm.entity.ShipmentStatus.APPROVED, " +
-           "com.example.customs_systemm.entity.ShipmentStatus.COMPLETED)")
+    // 🌟 تم التعديل هنا أيضاً: تنظيف الاستعلام من الباكيج القديم الخاطئ
+    @Query("SELECT COUNT(s) FROM Shipment s WHERE s.status IN (ShipmentStatus.APPROVED, ShipmentStatus.COMPLETED)")
     long countArchived();
 
     @Query("SELECT COUNT(s) FROM Shipment s")
@@ -62,16 +58,9 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
     @Query("DELETE FROM Shipment s WHERE s.id = :id")
     void deleteShipmentById(@Param("id") Long id);
 
-
-
-
     List<Shipment> findByStatus(ShipmentStatus status);
 
-
-
-
-
- // 1. البحث برقم الحاوية (دقيق)
+    // 1. البحث برقم الحاوية (دقيق)
     @Query("SELECT s FROM Shipment s WHERE s.containerNumber = :containerNumber")
     Optional<Shipment> findByContainerNumber(@Param("containerNumber") String containerNumber);
 
@@ -86,24 +75,7 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
            "LOWER(s.statisticalCode) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Shipment> searchByKeyword(@Param("keyword") String keyword);
 
-
-    
-
-    
-    
-    
- // ابحث في كل السجلات برقم الحاوية أو الرمز الإحصائي (بدون أي شرط للحالة)
-//    @Query("SELECT s FROM Shipment s WHERE s.containerNumber = :q OR s.statisticalCode = :q")
-//    Optional<Shipment> findAllByAnyId(@Param("q") String q);
-    
- // ابحث فقط في الشحنات اللي حالتها PENDING
-//    @Query("SELECT s FROM Shipment s WHERE s.status = com.example.customs_systemm.entity.ShipmentStatus.PENDING " +
-//           "AND (s.containerNumber = :q OR s.statisticalCode = :q)")
-//    Optional<Shipment> findPendingByAnyId(@Param("q") String q);
-
- // 🌟 التعديل المعتمد: إضافة LEFT JOIN FETCH لضمان جلب الصور مع الشحنة أثناء البحث
+    // 🌟 التعديل المعتمد: إضافة LEFT JOIN FETCH لضمان جلب الصور مع الشحنة أثناء البحث
     @Query("SELECT s FROM Shipment s LEFT JOIN FETCH s.documents WHERE s.containerNumber = :q OR s.statisticalCode = :q")
     Optional<Shipment> findAllByAnyId(@Param("q") String q);
-
-
 }
