@@ -160,28 +160,62 @@ body {
 
     <div class="header-banner">
         <img src="/images/gold_long.png" alt="مصلحة الجمارك">
+    
+    
+      
+    
+    <!-- شريط المستخدم العلوي -->
+<div style="display: flex; justify-content: flex-end; align-items: center; padding: 10px 25px; background:#1e40af(0, 0, 160); backdrop-filter: blur(10px); border-bottom: 1px solid #1e40af(255, 255, 255, 0.2);">
+    <div style="display: flex; align-items: center; gap: 15px; color: rgb(255, 255, 255)">
+        <span style="font-weight: bold; font-size: 14px;">
+             مرحباً: <span th:text="${#authentication.name}" style="color: #fbbf24;">المستخدم</span>
+        </span>
+        <form th:action="@{/logout}" method="post" style="margin: 0;">
+            <button type="submit" style="background: #ef4444; color: #1e40af; border: none; padding: 5px 15px; border-radius: 50px; cursor: pointer; font-family: 'Cairo'; font-size: 13px; font-weight: bold; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+                تسجيل الخروج
+            </button>
+        </form>
+    </div>
+</div>
     </div>
 
-    <div class="dashboard-container">
-        
-        <a href="/shipments/new" class="card fade-in" style="animation-delay: 0.1s;">
-       <img src="/images/tt.png" alt="إضافة حاوية" class="container-img">            <h3 style="font-weight: 800; margin-top: 10px;">إضافة شحنة جديدة</h3>
-            <p style="color: #64748b;"> نموذج الرفع الإلكتروني </p>
-        </a>
 
-        <a href="/shipments/archive" class="card fade-in" style="animation-delay: 0.2s;">
-            <h3 style="color: #475569;">إجمالي الأرشيف المعتمد</h3>
-            <div class="count approved" th:text="${approvedCount}">9</div>
-            <p style="color: #64748b;">سجلات الأرشفة الإلكترونية</p>
-        </a>
 
-        <a href="/shipments/pending" class="card fade-in" style="animation-delay: 0.3s;">
-            <h3 style="color: #475569;">شحنات قيد المراجعة</h3>
-            <div class="count pending" th:text="${pendingCount}">20</div>
-            <p style="color: #64748b;">اضغط للمعالجة والاعتماد الفوري</p>
-        </a>
 
-    </div>
+
+
+<div class="dashboard-container">
+    
+    <!-- كرت إضافة شحنة جديدة -->
+    <a href="/shipments/new" class="card fade-in" style="animation-delay: 0.1s;">
+        <img src="/images/tt.png" alt="إضافة حاوية" class="container-img">            
+        <h3 style="font-weight: 800; margin-top: 10px;">إضافة شحنة جديدة</h3>
+        <p style="color: #64748b;"> نموذج الرفع الإلكتروني </p>
+    </a>
+
+    <!-- كرت تعديل الشحنة (يوجه للصفحة الفخمة التي أرفقتها) -->
+    <!-- ملاحظة: الرابط هنا يفترض أنك تريد تعديل آخر شحنة أو الذهاب لقائمة التعديل -->
+    <a href="/shipments?status=PENDING" class="card fade-in" style="animation-delay: 0.15s;">
+        <div style="font-size: 50px; margin-bottom: 10px;">📝</div>
+        <h3 style="font-weight: 800; color: #1e3a8a;">تعديل بيانات الأرشيف</h3>
+        <p style="color: #64748b;">تحديث الصور والمستندات</p>
+    </a>
+
+    <!-- إجمالي الأرشيف المعتمد -->
+    <a href="/shipments/archive" class="card fade-in" style="animation-delay: 0.2s;">
+        <h3 style="color: #475569;">إجمالي الأرشيف المعتمد</h3>
+        <div class="count approved" th:text="${approvedCount}">9</div>
+        <p style="color: #64748b;">سجلات الأرشفة الإلكترونية</p>
+    </a>
+
+    <!-- كرت التعديل المحدث -->
+<a href="/shipments/edit-list" class="card fade-in" style="animation-delay: 0.15s;">
+    <div style="font-size: 50px; margin-bottom: 10px;">📝</div>
+    <h3 style="font-weight: 800; color: #1e3a8a;">تعديل الشحنات</h3>
+    <p style="color: #64748b;">تحديث البيانات والمرفقات</p>
+</a>
+
+</div>
 <!--
     <div class="fade-in" style="text-align: center; margin-top: 50px; animation-delay: 0.4s;">
         <h3 style="color: var(--primary); font-weight: 800;">🔍 البحث السريع عن شحنة</h3>
