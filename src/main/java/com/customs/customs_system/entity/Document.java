@@ -1,21 +1,22 @@
 package com.customs.customs_system.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 
 @Entity
 public class Document {
 	
 	
-	
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "doc_generator")
-	@SequenceGenerator(
-	    name = "doc_generator", 
-	    sequenceName = "doc_seq", 
-	    allocationSize = 50 // يجب أن يطابق الـ Batch Size لضمان السرعة
-	)
-	private Long id;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "doc_generator")
+    @SequenceGenerator(
+        name = "doc_generator", 
+        sequenceName = "doc_seq", 
+        allocationSize = 50 
+    )
+    private Long id;
 
     private String fileUrl; 
 
@@ -24,6 +25,8 @@ public class Document {
 
     @ManyToOne
     @JoinColumn(name = "shipment_id")
+    // 2. إضافة هذا السطر هنا لمنع السيرفر من الدخول في حلقة مفرغة عند تحويل البيانات لـ JSON
+    @JsonBackReference 
     private Shipment shipment;
 
     public Long getId() {
@@ -56,5 +59,6 @@ public class Document {
 
     public void setShipment(Shipment shipment) {
         this.shipment = shipment;
-    }}
+    }
+    }
 
