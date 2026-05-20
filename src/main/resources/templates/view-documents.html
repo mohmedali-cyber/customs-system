@@ -23,24 +23,63 @@
             overflow-x: hidden; 
         }
 
-        /* الهيدر المطور */
-        .title-container { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            margin-bottom: 40px; 
-            background: var(--glass); 
-            padding: 20px 40px; 
-            border-radius: 15px; 
-            backdrop-filter: blur(10px); 
-            border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-        }
+/* تنسيق الهيدر الرئيسي */
+.title-container { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    margin-bottom: 40px; 
+    background: var(--glass); 
+    padding: 20px 30px; 
+    border-radius: 15px; 
+    backdrop-filter: blur(10px); 
+    border: 1px solid rgba(255,255,255,0.05);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
 
-        .info-wrapper { display: flex; gap: 50px; align-items: flex-start; }
-        .info-box h2 { margin: 0; font-size: 1.1rem; color: #f8fafc; }
-        .info-box span { color: var(--primary); font-weight: bold; }
+/* حاوي الكروت الأربعة */
+.info-wrapper { 
+    display: flex; 
+    gap: 20px; /* مسافة متناسقة بين المربعات الأربعة */
+    align-items: stretch; /* تجعل جميع المربعات بنفس الارتفاع تلقائياً */
+    flex: 1;
+}
 
+/* تنسيق المربع (الكارت) الموحد */
+.info-box { 
+    background: rgba(255, 255, 255, 0.03); 
+    padding: 15px 20px; 
+    border-radius: 12px; 
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    min-width: 200px; /* توزيع مساحات متساوية */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* العنوان داخل الكارت (مثل: رقم الحاوية) */
+.info-box h2 { 
+    margin: 0 0 8px 0; 
+    font-size: 0.9rem; 
+    color: #94a3b8; /* لون رمادي هادئ للعنوان الجانبي */
+    font-weight: bold;
+}
+
+/* القيمة الفوقية (البيانات القادمة من السيرفر) */
+.info-box > span { 
+    color: white; 
+    font-weight: bold; 
+    font-size: 1.2rem; /* تكبير الخط داخل المربع ليصبح واضحاً */
+}
+
+/* ألوان مخصصة لنص الحالة داخل المربع الخاص بها */
+.status-approved-text {
+    color: #10b981 !important; /* أخضر للشحنات المعتمدة */
+}
+.status-pending-text {
+    color: #facc15 !important; /* أصفر للشحنات قيد المراجعة */
+}
         /* الختم */
         .stamp {
             border: 4px double var(--success);
@@ -258,34 +297,43 @@
         </svg>
     </button>
 
-    <div class="title-container">
-        <div class="info-wrapper">
-            <div class="info-box">
-                <h2>👤 المخلص: <span th:text="${shipment.customsbroker}">...</span></h2>
-                <p dir="ltr" style="font-size: 0.85rem; color: #38bdf8; margin: 5px 0 0 0;">📞 <span th:text="${shipment.brokerPhone}">...</span></p>
-            </div>
-            <div class="info-box">
-                <h2>📑 الحاوية: <span th:text="${shipment.containerNumber}">...</span></h2>
-            </div>
-            <div class="info-box">
-                <h2>🔢 الرمز الإحصائي: <span th:text="${shipment.statisticalCode}">...</span></h2>
-                <p style="margin-top:5px; font-size: 0.9rem;">
-                    الحالة: <span th:text="${shipment.status.name() == 'APPROVED' ? 'معتمدة' : 'قيد المراجعة'}"
-                    th:style="${shipment.status.name() == 'APPROVED' ? 'color:#10b981' : 'color:#facc15'}"></span>
-                </p>
-            </div>
+<div class="title-container">
+    <div class="info-wrapper">
+        <div class="info-box">
+            <h2> المخلص</h2>
+            <span th:text="${shipment.customsbroker}">...</span>
+            <p dir="ltr" style="font-size: 0.85rem; color: rgb(255, 255, 255); margin: 5px 0 0 0;">📞 <span th:text="${shipment.brokerPhone}">...</span></p>
         </div>
-     
-        <div class="stamp">
-            <span class="stamp-text">✅ تم الاعتماد</span>
-            <span class="stamp-date" th:text="${shipment.approvedAt != null ? #temporals.format(shipment.approvedAt, 'yyyy/MM/dd') : ''}"></span>
+        
+        <div class="info-box">
+            <h2>📑 رقم الحاوية</h2>
+            <span th:text="${shipment.containerNumber}">...</span>
+        </div>
+        
+        <div class="info-box">
+            <h2>🔢 الرمز الإحصائي</h2>
+            <span th:text="${shipment.statisticalCode}">...</span>
+        </div>
+
+        <div class="info-box status-box">
+            <h2> الحالة </h2>
+            <span th:text="${shipment.status.name() == 'APPROVED' ? 'معتمدة' : 'قيد المراجعة'}"
+                  th:class="${shipment.status.name() == 'APPROVED' ? 'status-approved-text' : 'status-pending-text'}">
+            </span>
         </div>
     </div>
+ 
+    <div class="stamp">
+        <span class="stamp-text">✅ تم الاعتماد</span>
+        <span class="stamp-date" th:text="${shipment.approvedAt != null ? #temporals.format(shipment.approvedAt, 'yyyy/MM/dd') : ''}"></span>
+    </div>
+</div>
 
     <div class="view-switcher">
-      <!--  <button id="btnSlider" class="view-btn active" onclick="setView('slider')">🖼️ عرض السلايدر (عرضي)</button>-->
+        <button id="btnSlider" class="view-btn active" onclick="setView('slider')">🖼️ عرض السلايدر (عرضي)</button>
         <button id="btnList" class="view-btn" onclick="setView('list')">📜 عرض القائمة (عمودي)</button>
     </div>
+  
     
     <div id="mainWrapper" class="slider-wrapper">
         <button onclick="scrollSlider(-300)" class="nav-btn left-btn">❮</button>
@@ -305,6 +353,7 @@
                 </p>
             </div>
         </div>
+
 
         <button onclick="scrollSlider(300)" class="nav-btn right-btn">❯</button>
     </div>
