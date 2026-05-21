@@ -293,7 +293,7 @@
     
     <a th:href="@{/shipments}" class="portal-btn btn btn-back" style="background: rgb(255, 255, 255); text-decoration: none;">↩ عودة للقائمة</a>
 
-    <th:block th:if="${shipment.status.name() == 'PENDING' and userRole == 'ADMIN'}">
+    <th:block th:if="${shipment.status.name() == 'PENDING'}" sec:authorize="hasRole('ADMIN')">
         <button type="button" th:onclick="'fireDirectConfirm(' + ${shipment.id} + ', \'approve\')'" 
                 style="background: #059669; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px;">
             ✅ اعتماد الشحنة

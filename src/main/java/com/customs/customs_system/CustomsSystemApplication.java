@@ -19,24 +19,24 @@ public class CustomsSystemApplication {
 
 	@Bean
 	CommandLineRunner initDatabase(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-		return args -> {
-			// التحقق إذا كان مستخدم admin موجود مسبقاً لتجنب التكرار
-			if (userRepository.findByUsername("admin").isEmpty()) {
-				User admin = new User();
-				admin.setUsername("admin");
-				
-				// تشفير كلمة المرور "123" باستخدام الـ Encoder اللي عرفناه في SecurityConfig
-				admin.setPassword(passwordEncoder.encode("123")); 
-				admin.setEnabled(true);
-				
-				// إعطاؤه صلاحية مدير
-				admin.setRoles(Set.of("ROLE_ADMIN"));
-				
-				userRepository.save(admin);
-				System.out.println("-----------------------------------------");
-				System.out.println("✅ تم إنشاء مستخدم الأدمن بنجاح (admin / 123)");
-				System.out.println("-----------------------------------------");
-			}
-		};
+	    return args -> {
+	        // التحقق إذا كان مستخدم admin موجود مسبقاً لتجنب التكرار
+	        if (userRepository.findByUsername("admin").isEmpty()) {
+	            User admin = new User();
+	            admin.setUsername("admin");
+	            
+	            // تشفير كلمة المرور "123"
+	            admin.setPassword(passwordEncoder.encode("123")); 
+	            admin.setEnabled(true);
+	            
+	            // 🔥 التعديل هنا: إعطاؤه صلاحية مدير كـ String عادي مباشرة بدون Set وبدون لغبطة
+	            admin.setRole("ADMIN");
+	            
+	            userRepository.save(admin);
+	            System.out.println("-----------------------------------------");
+	            System.out.println("✅ تم إنشاء مستخدم الأدمن بنجاح (admin / 123)");
+	            System.out.println("-----------------------------------------");
+	        }
+	    };
 	}
 }

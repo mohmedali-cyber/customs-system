@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.customs.customs_system.entity.*;
 import com.customs.customs_system.service.ShipmentService;
-
+import com.example.customs_systemm.entity.Shipment;
+import com.example.customs_systemm.entity.User;
 import com.customs.customs_system.repository.ShipmentRepository;
 import com.customs.customs_system.repository.UserRepository;
 
@@ -198,34 +199,62 @@ public class ShipmentController {
 //        model.addAttribute("shipment", shipment);
 //        return "view-documents";
 //    }
+//    @GetMapping("/view-docs/{id}")
+//    public String viewDocuments(@PathVariable Long id, Model model) {
+//        // 1. جلب بيانات الشحنة الحالية كالعادة
+//        Shipment shipment = shipmentService.getShipmentById(id);
+//        model.addAttribute("shipment", shipment);
+//
+//        try {
+//            // 2. معرفة اسم المستخدم الحالي اللي مسجل دخول
+//            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+//            String currentUsername = auth.getName();
+//
+//            // 3. جلب المستخدم من جدول users في نيون
+//            User currentUser = userRepository.findByUsername(currentUsername).orElse(null);
+//
+//            if (currentUser != null && currentUser.getRoles() != null) {
+//                // هنا السحر: التشييك المباشر على الكلمة اللي أنت كاتبها في نيون
+//                if (currentUser.getRoles().contains("ROLE_ADMIN")) {
+//                    model.addAttribute("userRole", "ADMIN");
+//                } else if (currentUser.getRoles().contains("ROLE_EDITOR")) {
+//                    model.addAttribute("userRole", "EDITOR");
+//                } else {
+//                    model.addAttribute("userRole", "USER"); // مستخدم عادي بدون صلاحيات اعتماد
+//                }
+//            } else {
+//                model.addAttribute("userRole", "GUEST"); // ضيف
+//            }
+//        } catch (Exception e) {
+//            model.addAttribute("userRole", "GUEST");
+//        }
+//
+//        return "view-documents";
+//    }
+   
+    
     @GetMapping("/view-docs/{id}")
     public String viewDocuments(@PathVariable Long id, Model model) {
-        // 1. جلب بيانات الشحنة الحالية كالعادة
+        // 1. جلب بيانات الشحنة الحالية
         Shipment shipment = shipmentService.getShipmentById(id);
         model.addAttribute("shipment", shipment);
 
         try {
-            // 2. معرفة اسم المستخدم الحالي اللي مسجل دخول
+            // 2. معرفة اسم المستخدم الحالي المسجل
             org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
             String currentUsername = auth.getName();
 
-            // 3. جلب المستخدم من جدول users في نيون
+            // 3. جلب المستخدم من جدول users
             User currentUser = userRepository.findByUsername(currentUsername).orElse(null);
 
-            if (currentUser != null && currentUser.getRoles() != null) {
-                // هنا السحر: التشييك المباشر على الكلمة اللي أنت كاتبها في نيون
-                if (currentUser.getRoles().contains("ROLE_ADMIN")) {
-                    model.addAttribute("userRole", "ADMIN");
-                } else if (currentUser.getRoles().contains("ROLE_EDITOR")) {
-                    model.addAttribute("userRole", "EDITOR");
-                } else {
-                    model.addAttribute("userRole", "USER"); // مستخدم عادي بدون صلاحيات اعتماد
-                }
+            if (currentUser != null && currentUser.getRole() != null) {
+                // نبعث الكلمة المكتوبة في القاعدة مباشرة (ADMIN أو USER أو EDITOR)
+                model.addAttribute("userRole", currentUser.getRole().toUpperCase());
             } else {
-                model.addAttribute("userRole", "GUEST"); // ضيف
+                model.addAttribute("userRole", "USER");
             }
         } catch (Exception e) {
-            model.addAttribute("userRole", "GUEST");
+            model.addAttribute("userRole", "USER");
         }
 
         return "view-documents";
