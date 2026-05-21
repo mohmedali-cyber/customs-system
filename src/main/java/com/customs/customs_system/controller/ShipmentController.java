@@ -13,6 +13,8 @@ import com.customs.customs_system.entity.*;
 import com.customs.customs_system.service.ShipmentService;
 
 import com.customs.customs_system.repository.ShipmentRepository;
+import com.customs.customs_system.repository.UserRepository;
+
 import java.util.List;
 
 
@@ -20,15 +22,17 @@ import java.util.List;
 @RequestMapping("/shipments")
 public class ShipmentController {
 
-    private final ShipmentService shipmentService;
+	 private final ShipmentService shipmentService;
+	    private final UserRepository userRepository; 
 
-    @Autowired
-    private ShipmentRepository shipmentRepository;
-    
-    public ShipmentController(ShipmentService shipmentService) {
-        this.shipmentService = shipmentService;
-    }
-
+	    @Autowired
+	    private ShipmentRepository shipmentRepository;
+	    
+	    public ShipmentController(ShipmentService shipmentService, UserRepository userRepository) {
+	        this.shipmentService = shipmentService;
+	        this.userRepository = userRepository;
+	    }
+	    
     // ==========================================
     // 📥 1. العرض الأساسي مع التقسيم (9 سجلات)
     // ==========================================
@@ -188,13 +192,44 @@ public class ShipmentController {
     // ==========================================
     // 📁 6. عرض المستندات
     // ==========================================
+//    @GetMapping("/view-docs/{id}")
+//    public String viewDocuments(@PathVariable Long id, Model model) {
+//        Shipment shipment = shipmentService.getShipmentById(id);
+//        model.addAttribute("shipment", shipment);
+//        return "view-documents";
+//    }
     @GetMapping("/view-docs/{id}")
     public String viewDocuments(@PathVariable Long id, Model model) {
+        // 1. جلب بيانات الشحنة الحالية كالعادة
         Shipment shipment = shipmentService.getShipmentById(id);
         model.addAttribute("shipment", shipment);
+
+        try {
+            // 2. معرفة اسم المستخدم الحالي اللي مسجل دخول
+            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            String currentUsername = auth.getName();
+
+            // 3. جلب المستخدم من جدول users في نيون
+            User currentUser = userRepository.findByUsername(currentUsername).orElse(null);
+
+            if (currentUser != null && currentUser.getRoles() != null) {
+                // هنا السحر: التشييك المباشر على الكلمة اللي أنت كاتبها في نيون
+                if (currentUser.getRoles().contains("ROLE_ADMIN")) {
+                    model.addAttribute("userRole", "ADMIN");
+                } else if (currentUser.getRoles().contains("ROLE_EDITOR")) {
+                    model.addAttribute("userRole", "EDITOR");
+                } else {
+                    model.addAttribute("userRole", "USER"); // مستخدم عادي بدون صلاحيات اعتماد
+                }
+            } else {
+                model.addAttribute("userRole", "GUEST"); // ضيف
+            }
+        } catch (Exception e) {
+            model.addAttribute("userRole", "GUEST");
+        }
+
         return "view-documents";
     }
-
     // ==========================================
     // 🗑️ 7. حذف الشحنة
     // ==========================================

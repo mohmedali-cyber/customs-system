@@ -5,6 +5,7 @@
     <title>منظومة معاينة المستندات المتكاملة</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     
+    <html lang="ar" dir="rtl" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
@@ -288,23 +289,23 @@
         <button onclick="scrollSlider(300)" class="nav-btn right-btn">❯</button>
     </div>
 
-   <div class="action-container" style="display: flex; gap: 15px; justify-content: center; align-items: center; margin-top: 30px; margin-bottom: 20px;">
-        
-        <a th:href="@{/shipments}" class="portal-btn btn btn-back" style="background: rgb(255, 255, 255); text-decoration: none;">↩ عودة للقائمة</a>
+<div class="action-container" style="display: flex; gap: 15px; justify-content: center; align-items: center; margin-top: 30px; margin-bottom: 20px;">
+    
+    <a th:href="@{/shipments}" class="portal-btn btn btn-back" style="background: rgb(255, 255, 255); text-decoration: none;">↩ عودة للقائمة</a>
 
-        <th:block th:if="${shipment.status.name() == 'PENDING'}">
-            <button type="button" th:onclick="'fireDirectConfirm(' + ${shipment.id} + ', \'approve\')'" 
-                    style="background: #059669; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px;">
-                ✅ اعتماد الشحنة
-            </button>
-            <button type="button" th:onclick="'fireDirectConfirm(' + ${shipment.id} + ', \'reject\')'" 
-                    style="background: #dc2626; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px;">
-                ❌ رفض الشحنة
-            </button>
-        </th:block>
+    <th:block th:if="${shipment.status.name() == 'PENDING' and userRole == 'ADMIN'}">
+        <button type="button" th:onclick="'fireDirectConfirm(' + ${shipment.id} + ', \'approve\')'" 
+                style="background: #059669; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px;">
+            ✅ اعتماد الشحنة
+        </button>
+        <button type="button" th:onclick="'fireDirectConfirm(' + ${shipment.id} + ', \'reject\')'" 
+                style="background: #dc2626; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px;">
+            ❌ رفض الشحنة
+        </button>
+    </th:block>
 
-        <button class="portal-btn btn btn-print" onclick="window.print()" style="background: #2563eb; border: none; color: white; cursor: pointer;">🖨️ طباعة الملف بالكامل</button>
-    </div>
+    <button class="portal-btn btn btn-print" onclick="window.print()" style="background: #2563eb; border: none; color: white; cursor: pointer;">🖨️ طباعة الملف بالكامل</button>
+</div>
 
     <div id="imgModal" class="modal">
         <span class="close-btn" onclick="closeModal()">&times;</span>
