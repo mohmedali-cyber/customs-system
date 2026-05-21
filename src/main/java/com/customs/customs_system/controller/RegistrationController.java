@@ -33,10 +33,12 @@ public class RegistrationController {
         
         User newUser = new User();
         newUser.setUsername(username);
-        // تشفير الباسورد قبل الحفظ في Neon
+        // تشفير الباسورد قبل الحفظ
         newUser.setPassword(passwordEncoder.encode(password));
         newUser.setEnabled(true);
-        newUser.setRoles(Set.of("ROLE_USER"));
+        
+        // 🔥 التعديل هنا: تخزين نص عادي مباشرة في نفس الجدول بدون لغبطة
+        newUser.setRole("USER"); 
         
         userRepository.save(newUser);
         return "redirect:/login?registered";

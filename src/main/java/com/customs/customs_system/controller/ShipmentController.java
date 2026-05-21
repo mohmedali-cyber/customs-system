@@ -11,8 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.customs.customs_system.entity.*;
 import com.customs.customs_system.service.ShipmentService;
-import com.example.customs_systemm.entity.Shipment;
-import com.example.customs_systemm.entity.User;
+
 import com.customs.customs_system.repository.ShipmentRepository;
 import com.customs.customs_system.repository.UserRepository;
 
