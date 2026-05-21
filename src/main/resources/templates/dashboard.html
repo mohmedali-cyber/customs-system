@@ -186,34 +186,32 @@ body {
 
 <div class="dashboard-container">
     
-    <!-- كرت إضافة شحنة جديدة -->
     <a href="/shipments/new" class="card fade-in" style="animation-delay: 0.1s;">
         <img src="/images/tt.png" alt="إضافة حاوية" class="container-img">            
         <h3 style="font-weight: 800; margin-top: 10px;">إضافة شحنة جديدة</h3>
         <p style="color: #64748b;"> نموذج الرفع الإلكتروني </p>
     </a>
 
-    <!-- كرت تعديل الشحنة (يوجه للصفحة الفخمة التي أرفقتها) -->
-    <!-- ملاحظة: الرابط هنا يفترض أنك تريد تعديل آخر شحنة أو الذهاب لقائمة التعديل -->
-    <a href="/shipments?status=PENDING" class="card fade-in" style="animation-delay: 0.15s;">
+    <a href="/shipments?status=PENDING" class="card fade-in" style="animation-delay: 0.15s;"
+       sec:authorize="hasAnyRole('ADMIN', 'EDITOR', 'STAFF')">
         <div style="font-size: 50px; margin-bottom: 10px;">📝</div>
         <h3 style="font-weight: 800; color: #1e3a8a;">تعديل بيانات الأرشيف</h3>
         <p style="color: #64748b;">تحديث الصور والمستندات</p>
     </a>
 
-    <!-- إجمالي الأرشيف المعتمد -->
-    <a href="/shipments/archive" class="card fade-in" style="animation-delay: 0.2s;">
+    <a href="/shipments/archive" class="card fade-in" style="animation-delay: 0.2s;"
+       sec:authorize="hasAnyRole('ADMIN', 'EDITOR', 'STAFF')">
         <h3 style="color: #475569;">إجمالي الأرشيف المعتمد</h3>
         <div class="count approved" th:text="${approvedCount}">9</div>
         <p style="color: #64748b;">سجلات الأرشفة الإلكترونية</p>
     </a>
 
-    <!-- كرت التعديل المحدث -->
-<a href="/shipments/edit-list" class="card fade-in" style="animation-delay: 0.15s;">
-    <div style="font-size: 50px; margin-bottom: 10px;">📝</div>
-    <h3 style="font-weight: 800; color: #1e3a8a;">تعديل الشحنات</h3>
-    <p style="color: #64748b;">تحديث البيانات والمرفقات</p>
-</a>
+    <a href="/shipments/edit-list" class="card fade-in" style="animation-delay: 0.15s;"
+       sec:authorize="hasAnyRole('ADMIN', 'EDITOR', 'STAFF')">
+        <div style="font-size: 50px; margin-bottom: 10px;">⚙️</div>
+        <h3 style="font-weight: 800; color: #1e3a8a;">تعديل الشحنات</h3>
+        <p style="color: #64748b;">تحديث البيانات والمرفقات</p>
+    </a>
 
 </div>
 <!--

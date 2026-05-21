@@ -19,12 +19,10 @@ public class User implements UserDetails {
     private String password;
     private boolean enabled = true;
     
-    // حقل نصي عادي داخل نفس الجدول لمنع المرطزة
     private String role; 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // إذا كان الدور فارغاً نضع USER افتراضياً، ونضيف ROLE_ تلقائياً في الذاكرة
         String r = (role == null || role.isEmpty()) ? "USER" : role.toUpperCase();
         return List.of(new SimpleGrantedAuthority("ROLE_" + r));
     }
@@ -47,7 +45,6 @@ public class User implements UserDetails {
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 
-    // 🔥 التعديل المضاف هنا: الـ Getter والـ Setter للـ Enabled عشان يختفي الخط الأحمر
-    public boolean isEnabledField() { return enabled; } // ميثود عادية للحقل تختلف عن ميثود السكيورتي فوق
+    public boolean isEnabledField() { return enabled; } 
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
 }

@@ -25,20 +25,23 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // تعطيل مؤقت للتطوير
+            .csrf(csrf -> csrf.disable()) 
             .authorizeHttpRequests(auth -> auth
-            	    // السماح بصفحة الدخول، وصفحة التسجيل الجديدة، والمصادر العامة
-            	    .requestMatchers("/login", "/register", "/css/**", "/images/**", "/js/**").permitAll()
-            	    
-            	    // أي طلب آخر يجب أن يكون صاحبه مسجلاً للدخول
-            	    .anyRequest().authenticated()
-            	)
+                .requestMatchers("/login", "/register", "/css/**", "/images/**", "/js/**").permitAll()
+                
+                .requestMatchers("/shipments/approve/**", "/shipments/reject/**").hasAnyRole("ADMIN", "EDITOR")
+                
+                               .requestMatchers("/admin/**").hasRole("ADMIN")
+                
+                .anyRequest().authenticated()
+            )
             .formLogin(login -> login
-                .loginPage("/login") // صفحة الدخول الخاصة بنا
-                .defaultSuccessUrl("/", true) // التوجيه للصفحة الرئيسية (التي تظهر في الصورة) بعد النجاح
+                .loginPage("/login")
+                .defaultSuccessUrl("/", true)
                 .permitAll()
             )
             .logout(logout -> logout
