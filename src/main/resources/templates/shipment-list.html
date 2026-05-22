@@ -96,25 +96,40 @@
 }
 
 /* 🔥 التاب النشط */
-.tab-link.active {
-    animation: glowPulse 5s infinite;
-}
-
-@keyframes glowPulse {
-    0% {
-        box-shadow: 0 0 5px rgba(255,140,0,0.5);
-    }
-    0% {
-        box-shadow: 0 0 7px rgb(0, 255, 0);
+/* ✨ أنميشن وميض النص الداخلي للأزرار */
+@keyframes tabTextGlow {
+    0%, 100% {
+        text-shadow: 0 0 4px currentColor;
+        transform: translateY(0) scale(1);
     }
     50% {
-        box-shadow: 
-            0 0 20px rgb(196, 98, 0),
-            0 0 40px rgb(0, 0, 0);
+        text-shadow: 0 0 12px currentColor, 0 0 20px currentColor;
+        transform: translateY(-2px) scale(1.02); /* رفعة خفيفة مع نبضة حية للزر */
     }
-    100% {
-        box-shadow: 0 0 px rgba(255,140,0,0.5);
-    }
+}
+
+/* 🟠 وميض زر "قيد المراجعة" لما يكون هو النشط */
+.tab-link.active[onclick*="PENDING"] {
+    color: rgb(255, 140, 0) !important; /* النص يتحول للبرتقالي الملكي */
+    background: rgb(50, 50, 50) !important; /* خلفية داكنة تبرز اللون */
+    border-bottom: 3px solid rgb(255, 140, 0) !important; /* خط سفلي برتقالي */
+    animation: tabTextGlow 4s infinite ease-in-out;
+}
+
+/* 🟢 وميض زر "معتمدة" لما يكون هو النشط */
+.tab-link.active[onclick*="APPROVED"] {
+    color: #10b981 !important; /* النص يتحول للأخضر الزاهي النظيف */
+    background: rgb(50, 50, 50) !important;
+    border-bottom: 3px solid #10b981 !important; /* خط سفلي أخضر */
+    animation: tabTextGlow 4s infinite ease-in-out;
+}
+
+/* 🔴 وميض زر "مرفوضة" لما يكون هو النشط */
+.tab-link.active[onclick*="REJECTED"] {
+    color: #ef4444 !important; /* النص يتحول للأحمر التنبيهي الفاقع */
+    background: rgb(50, 50, 50) !important;
+    border-bottom: 3px solid #ef4444 !important; /* خط سفلي أحمر */
+    animation: tabTextGlow 2.5s infinite ease-in-out; /* أنميشن أسرع قليلاً */
 }
 
         .workspace {
@@ -253,31 +268,57 @@
     white-space: nowrap; /* منع انقسام النص */
 }
 
+/* التنسيق الأساسي للحاوية الكبرى للهيدر */
 .header-main {
-    width: 100%;
     display: flex;
-    justify-content: center; /* يضمن بقاء العنوان في المنتصف تماماً */
-    align-items: center;
-    padding: 20px 0;
-    position: relative; /* ضروري لتمكين تحريك التاريخ بداخله */
-    text-align: center;
+    flex-direction: column; /* يجعل العناصر تترتب تحت بعضها رأساً */
+    align-items: center;    /* يضمن توسيط الشعار والعنوان في المنتصف تماماً */
+    justify-content: center;
+    position: relative;     /* أساسي لتثبيت موقع التاريخ في الجانب */
+    padding: 30px 40px;
+    background: rgb(40, 40, 40); /* متناسق مع كود الألوان الحالي لديك */
+    border-radius: 16px;
+    border: 1px solid rgb(255, 128, 0);
+    box-shadow: 0 0 25px rgba(255, 128, 0, 0.2);
+    gap: 7px;             /* مسافة متناسقة لكي لا يلتصق الشعار بالكلام */
 }
 
+/* حاوية الشعار */
+.logo-container {
+    margin-bottom: 2px;    /* مسافة إضافية بسيطة تفصل الشعار عن العنوان بالأسفل */
+    display: flex;
+    justify-content: center;
+}
+
+/* حاوية العنوان والأزرار */
 .header-info {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
-    z-index: 2; /* لضمان ظهوره فوق أي طبقات أخرى */
+    gap: 12px;
+    text-align: center;
 }
 
-/* التعديل الجوهري للتاريخ */
+/* سحب تاريخ النظام إلى أقصى اليمين أو اليسار بناءً على رغبتك باستخدام Absolute */
 .system-date {
-    position: absolute; /* يخرجه من تدفق التوسط ووضعه في الجنب */
-    right: 30px; /* يبعده عن حافة الصفحة اليمنى بمسافة 30px */
-    top: 50%;
-    transform: translateY(-50%); /* لتوسيطه عمودياً بضبط */
-    text-align: right;
+    position: absolute;
+    right: 40px;        /* يحدد المسافة من اليمين */
+    left: auto;         /* إلغاء أي قيمة قديمة لليسار */
+   top: 80%; 
+    transform: translateY(-50%);
+    text-align: center;
+}
+
+/* في حال تداخل التاريخ مع التصميم على الشاشات الصغيرة */
+@media (max-width: 768px) {
+    .header-main {
+        padding-bottom: 80px;
+    }
+    .system-date {
+        position: static;
+        transform: none;
+        margin-top: 15px;
+    }
 }
 
 /* إذا أردت التاريخ في جهة اليسار بدلاً من اليمين، استبدل right بـ left: 30px */
@@ -308,6 +349,32 @@
 .portal-btn:hover {
     transform: translateY(-3px); /* رفعة بسيطة عند التمرير */
 }
+
+
+
+
+/* 🟠 ألوان قيد المراجعة (الافتراضية) */
+.workspace.status-pending {
+    border: 1px solid rgb(255, 128, 0);
+}
+
+/* 🟢 ألوان المعتمدة (تغيير فخم وهادي) */
+.workspace.status-approved {
+    border: 1px solid #059669;
+}
+
+
+/* 🔴 ألوان المرفوضة (تنبيه ذكي) */
+.workspace.status-rejected {
+    border: 1px solid #dc2626;
+}
+.workspace.status-rejected .custom-thead {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+
+
+
 </style>
 </head>
 <body>
@@ -321,18 +388,15 @@
     </svg>
 </button>
 
-<div class="logo-section">
-    <div class="luxury-logo-wrapper">
-        <img th:src="@{/images/bbp.png}" class="halo-logo-hero" alt="الخلفية" />
-        
-        <div class="floating-overlay">
-            <img th:src="@{/images/cm.png}" class="moving-logo-float" alt="شعار متحرك" />
-        </div>
-    </div>
-</div>
+
 
 <div class="header-main">
-    <div class="header-spacer"></div>
+    
+    <div class="logo-container">
+        <div class="luxury-logo">
+            <img th:src="@{/images/dr.png}" class="halo-logo" style="width: 130px; height: auto;" />
+        </div>
+    </div> 
 
     <div class="header-info">
         <h2 th:text="${pageTitle}">إدارة الشحنات الذكية</h2>
@@ -343,14 +407,14 @@
             </svg>
             البوابة الرئيسية
         </a>
+   
     </div>
 
     <div class="system-date">
         <div class="date-label">تاريخ النظام</div>
-        <div class="date-value" th:text="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">2026-05-03</div>
+        <div class="date-value" th:text="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">2026-05-22</div>
     </div>
 </div>
-
 <div class="tabs-container">
 <button class="tab-link"
         th:classappend="${currentStatus == 'PENDING'} ? 'active' : ''"
@@ -372,20 +436,31 @@
 </div>
 
 
-<div class="workspace">
-
-    <form th:action="@{/shipments}" method="get" class="search-box"
-          style="display: flex; gap: 10px; margin-bottom: 30px; background: rgb(212, 212, 212); padding: 8px; border-radius: 15px;">
-        <input type="hidden" name="status" th:value="${currentStatus}"> 
-       
-        <input type="text" name="keyword" th:value="${keyword}" 
-       style="flex: 1; border: 1px solid rgb(179, 89, 0); background: rgba(255, 255, 255, 0.1); 
-              backdrop-filter: blur(10px); padding: 12px 20px; border-radius: 12px; 
-              color: var(--primary3); font-family: 'Cairo'; outline: none; transition: 0.3s;" 
-       placeholder="🔍 ابحث برقم الحاوية أو المخلص...">
-       
-        <button type="submit" style="background: var(--primary); color: rgb(255, 128, 0); border: none; padding: 10px 30px; border-radius: 12px; cursor: pointer; font-weight: 700;">بحث</button>
-    </form>
+<div class="workspace" th:classappend="${currentStatus == 'APPROVED' ? 'status-approved' : (currentStatus == 'REJECTED' ? 'status-rejected' : 'status-pending')}">
+ <form th:action="@{/shipments}" method="get" class="search-box"
+      style="display: flex; gap: 10px; margin-bottom: 30px; background: rgb(212, 212, 212); padding: 8px; border-radius: 15px; align-items: center;">
+    
+    <input type="hidden" name="status" th:value="${currentStatus}"> 
+   
+    <div style="position: relative; flex: 1; display: flex; align-items: center;">
+        
+        <input type="text" id="search-input" name="keyword" th:value="${keyword}" 
+               style="width: 100%; border: 1px solid rgb(179, 89, 0); background: rgba(255, 255, 255, 0.1); 
+                      backdrop-filter: blur(10px); padding: 12px 40px 12px 20px; border-radius: 12px; 
+                      color: var(--primary3); font-family: 'Cairo'; outline: none; transition: 0.3s;" 
+               placeholder="🔍 ابحث برقم الحاوية أو المخلص..." 
+               oninput="toggleClearButton()">
+        
+        <span id="clear-search" onclick="clearSearchField()" 
+              style="position: absolute; left: 15px; cursor: pointer; color: #dc2626; font-weight: bold; font-size: 1.2rem; display: none; user-select: none; transition: 0.2s;"
+              onmouseover="this.style.transform='scale(1.2)'"
+              onmouseout="this.style.transform='scale(1)'">
+            ✖
+        </span>
+    </div>
+   
+    <button type="submit" style="background: var(--primary); color: rgb(255, 128, 0); border: none; padding: 10px 30px; border-radius: 12px; cursor: pointer; font-weight: 700;">بحث</button>
+</form>
 
     <!-- 🔥 الجزء اللي بيتحدث فقط -->
 <div id="table-container" th:fragment="tableFragment">
@@ -455,6 +530,7 @@
             <h3 style="color: var(--text-muted2);">لا توجد سجلات حالياً</h3>
         </div>
 
+    </div>
 
 </div>
     <script>
@@ -578,30 +654,67 @@ function showReason(reason) {
     </script>
 
 <script>
+// 1. دالة الـ التابات الذكية (تحتفظ بالبحث عند التنقل لو موجود)
 async function loadTab(status, el) {
-
-    // 🔥 ده أهم سطر (خليه الأول)
-    document.querySelectorAll('.tab-link').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    el.classList.add('active'); // ← اعتمد على الزر نفسه فقط
+    document.querySelectorAll('.tab-link').forEach(btn => btn.classList.remove('active'));
+    el.classList.add('active');
 
     try {
-        const res = await fetch(`/shipments/fragment?status=${status}`);
+        const searchInput = document.getElementById('search-input');
+        const keyword = searchInput ? searchInput.value : '';
+
+        const res = await fetch(`/shipments/fragment?status=${status}&keyword=${encodeURIComponent(keyword)}`);
         const html = await res.text();
 
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
+        document.querySelector('#table-container').innerHTML = doc.querySelector('#table-container').innerHTML;
 
-        const newTable = doc.querySelector('#table-container').innerHTML;
-
-        document.querySelector('#table-container').innerHTML = newTable;
+        const hiddenStatusInput = document.querySelector('input[name="status"]');
+        if (hiddenStatusInput) hiddenStatusInput.value = status;
 
     } catch (e) {
         console.error("خطأ:", e);
     }
 }
 
+// 2. دالة تظهّر وتخفي زر الـ X حسب لو الخانة فيها كتيبة أو لا
+function toggleClearButton() {
+    const input = document.getElementById('search-input');
+    const clearBtn = document.getElementById('clear-search');
+    if (input && clearBtn) {
+        clearBtn.style.display = input.value.trim().length > 0 ? 'block' : 'none';
+    }
+}
+
+// 3. دالة تفريغ البحث الاحترافية (لما تضغط على X)
+async function clearSearchField() {
+    const input = document.getElementById('search-input');
+    if (input) {
+        input.value = ''; // مسح النص
+        toggleClearButton(); // إخفاء زر X
+        
+        // جلب الحالة الحالية المفتوحة عشان نرد الجدول الأصلي بتاعها
+        const hiddenStatusInput = document.querySelector('input[name="status"]');
+        const status = hiddenStatusInput ? hiddenStatusInput.value : 'PENDING';
+        
+        // تحديث الجدول فوراً بدون ريفريش كامل للصفحة
+        try {
+            const res = await fetch(`/shipments/fragment?status=${status}&keyword=`);
+            const html = await res.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            document.querySelector('#table-container').innerHTML = doc.querySelector('#table-container').innerHTML;
+        } catch (e) {
+            console.error(e);
+        }
+    }
+}
+
+// تشغيل الفحص أول ما تفتح الصفحة لو كان فيه بحث سابق معلق
+document.addEventListener("DOMContentLoaded", function() {
+    toggleClearButton();
+});
 function reBindActions() {
     // حالياً مش محتاجين نعمل حاجة
     // بس هنستخدمها لو حبينا نربط events لاحقاً
