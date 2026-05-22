@@ -389,50 +389,50 @@
 
     <!-- 🔥 الجزء اللي بيتحدث فقط -->
 <div id="table-container" th:fragment="tableFragment">
-        <div th:if="${not #lists.isEmpty(shipments)}">
-            <table>
-                <thead class="custom-thead">
-                    <tr>
-                        <th>رقم الحاوية</th>
-                        <th>المخلص الجمركي</th>
-                        <th>الرمز الإحصائي</th>
-                        <th>الحالة</th>
-                        <th>العمليات</th>
-                    </tr>
-                </thead>
+    <div th:if="${not #lists.isEmpty(shipments)}">
+        <table>
+            <thead class="custom-thead">
+                <tr>
+                    <th>رقم الحاوية</th>
+                    <th>المخلص الجمركي</th>
+                    <th>الرمز الإحصائي</th>
+                    <th>الحالة</th>
+                    <th>العمليات</th>
+                </tr>
+            </thead>
 
-                <tbody>
-                    <tr th:each="s : ${shipments}">
-                        <td><strong th:text="${s.containerNumber}" style="color: var(--primary3); font-size: 1.1rem;"></strong></td>
-                        <td th:text="${s.customsbroker}" style="color: var(--primary3); font-size: 1.1rem;"></td>
-                        <td><span class="stat-badge" th:text="${s.statisticalCode}"></span></td>
+            <tbody>
+                <tr th:each="s : ${shipments}">
+                    <td><strong th:text="${s.containerNumber}" style="color: var(--primary3); font-size: 1.1rem;"></strong></td>
+                    <td th:text="${s.customsbroker}" style="color: var(--primary3); font-size: 1.1rem;"></td>
+                    <td><span class="stat-badge" th:text="${s.statisticalCode}"></span></td>
 
-                        <td>
-                            <div th:if="${s.status.name() == 'REJECTED'}">
-                                <span style="color: var(--danger); font-weight: 700;">❌ مرفوضة</span><br>
-                                <button class="btn-reason" th:onclick="showReason([[${s.rejectionReason}]])">🔎 عرض السبب</button>
-                            </div>
+                    <td>
+                        <div th:if="${s.status.name() == 'REJECTED'}">
+                            <span style="color: var(--danger); font-weight: 700;">❌ مرفوضة</span><br>
+                            <button class="btn-reason" th:onclick="showReason([[${s.rejectionReason}]])">🔎 عرض السبب</button>
+                        </div>
 
-                            <span th:if="${s.status.name() == 'APPROVED'}" style="color: var(--success6); font-weight: 700;">✅ معتمدة</span>
-                            <span th:if="${s.status.name() == 'PENDING'}" style="color: var(--primary3); font-weight: 700;">⏳ قيد المراجعة</span>
-                        </td>
+                        <span th:if="${s.status.name() == 'APPROVED'}" style="color: var(--success6); font-weight: 700;">✅ معتمدة</span>
+                        <span th:if="${s.status.name() == 'PENDING'}" style="color: var(--primary3); font-weight: 700;">⏳ قيد المراجعة</span>
+                    </td>
 
-                        <td>
-                            <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
-                                <a th:href="@{'/shipments/view-docs/' + ${s.id}}" class="btn-mini btn-view">عرض</a>
+                    <td>
+                        <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
+                            <a th:href="@{'/shipments/view-docs/' + ${s.id}}" class="btn-mini btn-view">عرض</a>
 
-                                <th:block th:if="${s.status.name() == 'PENDING'}">
-                                    <button class="btn-mini btn-approve" th:onclick="'fireConfirm(' + ${s.id} + ', \'approve\')'">اعتماد</button>
-                                    <button class="btn-mini btn-reject" th:onclick="'fireConfirm(' + ${s.id} + ', \'reject\')'">رفض</button>
-                                </th:block>
-
-                                <button class="btn-delete" th:onclick="'fireDelete(' + ${s.id} + ')'">🗑️</button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-
+                            <button sec:authorize="hasRole('ADMIN')" 
+                                    class="btn-delete" 
+                                    th:onclick="'fireDelete(' + ${s.id} + ')'">
+                                🗑️
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
             <div class="pagination-container" th:if="${totalPages > 1}">
                 <div class="page-info">
                     صفحة <span th:text="${currentPage + 1}"></span> من 
@@ -455,7 +455,6 @@
             <h3 style="color: var(--text-muted2);">لا توجد سجلات حالياً</h3>
         </div>
 
-    </div>
 
 </div>
     <script>
