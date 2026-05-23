@@ -656,6 +656,49 @@ function showReason(reason) {
 <script>
 // 1. دالة الـ التابات الذكية (تحتفظ بالبحث عند التنقل لو موجود)
 async function loadTab(status, el) {
+    // 1. نتحققوا هل التاب اللي نقرنا عليها توا هي أصلاً نشطة (Active)؟
+    const isAlreadyActive = el.classList.contains('active');
+
+    // 2. لو كانت نشطة ونقرنا عليها مرة ثانية، يعني المستخدِم يبي يسكرها
+    if (isAlreadyActive) {
+        el.classList.remove('active'); // نحّي حالة النشاط من الزر
+        
+        // فضّي الحاوية فوراً عشان تختفي القائمة والجدول
+document.querySelector('#table-container').innerHTML = `
+    <div style="text-align: center; padding: 10px 10px 40px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Cairo', sans-serif;">
+        
+        <style>
+            @keyframes smoothZoom {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.04); }
+                100% { transform: scale(1); }
+            }
+            .animated-ultra-banner {
+                animation: smoothZoom 8s infinite ease-in-out;
+                transition: transform 0.5s ease;
+            }
+        </style>
+
+        <div style="width: 100%; max-width: 1100px; height: auto; aspect-ratio: 16 / 7; min-height: 220px; max-height: 420px; margin: 20px auto; border-radius: 20px; overflow: hidden; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.25);">
+            
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('/images/pv.png'); background-size: cover; background-position: center; filter: blur(20px) brightness(0.6); transform: scale(1.1); z-index: 1;"></div>
+            
+            <div style="position: relative; width: 100%; height: 100%; z-index: 2; display: flex; align-items: center; justify-content: center;">
+                <img src="/images/pv.png" class="animated-ultra-banner" alt="منظر الميناء والشعار كامل الأطراف" 
+                     style="width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; pointer-events: none;" />
+            </div>
+                 
+        </div>
+       
+    </div>
+`;     
+        // نلغوا قيمة الـ Hidden input عشان نمنعوا أي تداخل
+        const hiddenStatusInput = document.querySelector('input[name="status"]');
+        if (hiddenStatusInput) hiddenStatusInput.value = '';
+        return; // نوقفوا التنفيذ هنا وما نطلبوش بيانات من السيرفر
+    }
+
+    // 3. لو مكانتش نشطة (يعني أول نقرة عشان يفتح القائمة)، نفذ المنطق الطبيعي بتاع الجلب
     document.querySelectorAll('.tab-link').forEach(btn => btn.classList.remove('active'));
     el.classList.add('active');
 
@@ -663,6 +706,7 @@ async function loadTab(status, el) {
         const searchInput = document.getElementById('search-input');
         const keyword = searchInput ? searchInput.value : '';
 
+        // نطلبوا البيانات من السيرفر للتاب المحددة
         const res = await fetch(`/shipments/fragment?status=${status}&keyword=${encodeURIComponent(keyword)}`);
         const html = await res.text();
 
@@ -674,7 +718,7 @@ async function loadTab(status, el) {
         if (hiddenStatusInput) hiddenStatusInput.value = status;
 
     } catch (e) {
-        console.error("خطأ:", e);
+        console.error("خطأ أثناء جلب البيانات:", e);
     }
 }
 
