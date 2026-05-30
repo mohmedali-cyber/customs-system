@@ -300,14 +300,14 @@
                 style="background: #059669; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: transform 0.2s, background 0.3s; display: inline-flex; align-items: center; gap: 8px;"
                 onmouseover="this.style.background='#047857'; this.style.transform='scale(1.03)'"
                 onmouseout="this.style.background='#059669'; this.style.transform='scale(1)'">
-            ✅ اعتماد الشحنة
+            ✅ قبول
         </button>
         
         <button type="button" th:onclick="'fireDirectConfirm(' + ${shipment.id} + ', \'reject\')'" 
                 style="background: #dc2626; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: transform 0.2s, background 0.3s; display: inline-flex; align-items: center; gap: 8px;"
                 onmouseover="this.style.background='#b91c1c'; this.style.transform='scale(1.03)'"
                 onmouseout="this.style.background='#dc2626'; this.style.transform='scale(1)'">
-            ❌ رفض الشحنة
+            ❌ رفض 
         </button>
     </div>
 </th:block>
