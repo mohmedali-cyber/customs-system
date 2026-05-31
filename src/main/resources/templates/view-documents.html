@@ -38,7 +38,7 @@
             border-radius: 15px; 
             backdrop-filter: blur(10px); 
             border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            box-shadow: 0 15px 35px rgb(255, 255, 255);
         }
 
         /* حاوي الكروت الأربعة */
@@ -50,17 +50,14 @@
         }
 
         /* تنسيق المربع (الكارت) الموحد */
-        .info-box { 
-            background: rgba(255, 255, 255, 0.03); 
-            padding: 15px 20px; 
-            border-radius: 12px; 
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            min-width: 200px; 
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+     .info-box {
+    background-color: rgb(0, 64, 128); /* 🎨 غير هذا اللون لتغيير خلفية الكارات بالكامل */
+    border: 1px solid rgba(255, 255, 255, 0.05); /* لون حدود الكارات */
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    color: #ffffff;
+}
 
         .info-box h2 { 
             margin: 0 0 8px 0; 
@@ -220,6 +217,153 @@
         .list-mode .img-card p { width: 100%; font-size: 1.2rem; padding: 15px; margin-top: 10px; background: #f8fafc; color: var(--dark); border-right: 5px solid var(--primary); }
         .list-mode-active .nav-btn { display: none !important; }
     </style>
+
+
+<style>
+/* جدول التقرير الرسمي - مخفي تماماً في الشاشة العادية */
+#officialReportPrintArea {
+    display: none;
+}
+
+/* 🖨️ ستايل التحكم بالطباعة الفعلي */
+@media print {
+    /* 1. إخفاء كل عناصر الصفحة الحالية (العناوين، السلايدر، الأزرار، المرفقات) */
+    .title-container, .view-switcher, .slider-wrapper, .action-container, #imgModal, .back-fab, button, a {
+        display: none !important;
+    }
+
+    /* 2. إظهار منطقة التقرير الرسمي فقط */
+    #officialReportPrintArea {
+        display: block !important;
+        direction: rtl;
+        font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 20px;
+    }
+
+    /* 3. تنسيق الجدول الرسمي ليكون كأنه ورقة وورد رسمية مخططة */
+    .official-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    .official-table th, .official-table td {
+        border: 1px solid #000000 !important; /* خطوط سوداء حادة للطباعة المعتمدة */
+        padding: 12px;
+        text-align: right;
+        font-size: 14px;
+        color: #000;
+    }
+    .official-table th {
+        background-color: #f2f2f2 !important; /* خلفية رمادية خفيفة للعناوين */
+        font-weight: bold;
+        width: 30%;
+    }
+    
+    /* ترويسة التقرير العلوي */
+    .report-header {
+        text-align: center;
+        border-bottom: 2px double #000;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+    }
+    .report-header h1 {
+        font-size: 22px;
+        margin: 0 0 5px 0;
+    }
+    .report-header p {
+        font-size: 14px;
+        margin: 5px 0;
+    }
+    
+    /* تذييل الورقة للتوقيع والختم */
+    .report-footer {
+        margin-top: 50px;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 30px;
+    }
+    .signature-box {
+        text-align: center;
+        font-size: 14px;
+        font-weight: bold;
+    }
+}
+</style>
+
+<style>
+/* 🖨️ ستايل خاص لتعديل الصفحة بالكامل عند الضغط على زر طباعة الملف */
+@media print {
+    /* 1. إخفاء الأزرار وأشرطة التنقل الفركشة اللي ما نبيش نطبخوها */
+    .view-switcher, .action-container, .back-fab, .nav-btn, .zoom-controls, .close-btn, button, a {
+        display: none !important;
+    }
+
+    /* 2. إلغاء نظام السلايدر العرضي وتحويله إلى شبكة عمودية تفرد الصور كلها */
+    .slider-wrapper {
+        display: block !important;
+        width: 100% !important;
+        box-shadow: none !important;
+        background: none !important;
+        padding: 0 !important;
+    }
+
+    .images-container {
+        display: block !important; /* فك الـ flex العرضي */
+        overflow: visible !important; /* إظهار الصور الممتدة */
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    /* 3. تنسيق كروت الصور لكي تنزل تحت بعضها بشكل مرتب وكل صورة في حجم مناسب */
+    .img-card {
+        display: block !important;
+        page-break-inside: avoid; /* منع انقسام الصورة الواحدة بين صفحتين */
+        margin-bottom: 30px !important;
+        text-align: center !important;
+        width: 100% !important;
+    }
+
+    .img-card img {
+        max-width: 90% !important; /* حجم الصورة لكي يتناسب مع ورقة A4 */
+        height: auto !important;
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+        display: block !important;
+        margin: 0 auto 10px auto !important;
+        
+        /* 💡 أهم سطر لضمان إجبار المتصفح على إظهار الصور */
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .img-card p {
+        color: #000 !important;
+        font-weight: bold !important;
+        font-size: 14px !important;
+        margin-top: 5px !important;
+    }
+
+    /* 4. تنسيق كروت البيانات العلوية لكي تظهر واضحة باللون الأسود في الطباعة */
+    .title-container {
+        box-shadow: none !important;
+        background: none !important;
+        border-bottom: 2px solid #000 !important;
+        padding-bottom: 20px !important;
+    }
+    
+    .info-box {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    
+    .info-box h2, .info-box span, .info-box p {
+        color: #000 !important;
+    }
+}
+</style>
 </head>
 
 <body th:class="${shipment.status.name() == 'APPROVED' ? 'status-approved' : ''}">
@@ -232,32 +376,47 @@
     </button>
 
 <div class="title-container">
-    <div class="info-wrapper">
+    <div class="info-wrapper" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; width: 100%;">
+        
         <div class="info-box">
-            <h2> المخلص</h2>
-            <span th:text="${shipment.customsbroker}">...</span>
-            <p dir="ltr" style="font-size: 0.85rem; color: rgb(255, 255, 255); margin: 5px 0 0 0;">📞 <span th:text="${shipment.brokerPhone}">...</span></p>
+            <h2> المخلص الجمركي</h2>
+            <span th:text="${shipment.customsbroker}" style="font-weight: 900; font-size: 1.2rem;">...</span>
+            
+            <p style="font-size: 0.85rem; color: rgb(192, 192, 192); margin: 6px 0 0 0; font-family: 'Cairo';">
+                رقم وطني: <span th:text="${shipment.brokerNationalId != null ? shipment.brokerNationalId : 'غير مسجل'}">...</span>
+            </p>
+            
+           <p dir="rtl" style="font-size: 0.85rem; color: rgb(255, 255, 255); margin: 4px 0 0 0; text-align: center; display: flex; justify-content: center; align-items: center; gap: 4px;">
+    <span>   رقم الهاتف 📞</span> 
+    <span th:text="${shipment.brokerPhone}" style="direction: ltr; display: inline-block;">...</span>
+</p>
+        </div>
+        
+       <!--  الكود بعد التعديل ليتناسق مع باقي الكارات -->
+<div class="info-box">
+    <h2> الجهة</h2>
+    <span th:text="${shipment.entityName != null ? shipment.entityName : 'غير محددة'}" style="font-weight: 800; font-size: 1.1rem;">...</span>
+</div>
+        
+        <div class="info-box">
+            <h2> رقم الحاوية</h2>
+            <span th:text="${shipment.containerNumber}" style="font-family: monospace; font-size: 1.2rem; font-weight: bold;">...</span>
         </div>
         
         <div class="info-box">
-            <h2>📑 رقم الحاوية</h2>
-            <span th:text="${shipment.containerNumber}">...</span>
-        </div>
-        
-        <div class="info-box">
-            <h2>🔢 الرمز الإحصائي</h2>
-            <span th:text="${shipment.statisticalCode}">...</span>
+            <h2> الرمز الإحصائي</h2>
+            <span th:text="${shipment.statisticalCode}" style="font-weight: bold;">...</span>
         </div>
 
         <div class="info-box status-box">
-            <h2> الحالة </h2>
-            <span th:text="${shipment.status.name() == 'APPROVED' ? 'معتمدة' : 'قيد المراجعة'}"
-                  th:class="${shipment.status.name() == 'APPROVED' ? 'status-approved-text' : 'status-pending-text'}">
-            </span>
+            <h2> حالة الشحنة</h2>
+            <span th:if="${shipment.status.name() == 'APPROVED'}" class="status-approved-text" style="font-weight: 900; color: #10b981;">✅ معتمدة</span>
+            <span th:if="${shipment.status.name() == 'REJECTED'}" class="status-rejected-text" style="font-weight: 900; color: #ef4444;">❌ مرفوضة</span>
+            <span th:if="${shipment.status.name() == 'PENDING'}" class="status-pending-text" style="font-weight: 900; color: #f59e0b;">⏳ قيد المراجعة</span>
         </div>
     </div>
  
-    <div class="stamp">
+    <div class="stamp" th:if="${shipment.status.name() == 'APPROVED'}">
         <span class="stamp-text">✅ تم الاعتماد</span>
         <span class="stamp-date" th:text="${shipment.approvedAt != null ? #temporals.format(shipment.approvedAt, 'yyyy/MM/dd') : ''}"></span>
     </div>
@@ -293,27 +452,32 @@
     
     <a th:href="@{/shipments}" class="portal-btn btn btn-back" style="background: rgb(255, 255, 255); text-decoration: none;">↩ عودة للقائمة</a>
 
-    
 <th:block th:if="${shipment.status.name() == 'PENDING'}" sec:authorize="hasAnyRole('ADMIN', 'EDITOR')">
     <div style="display: inline-flex; gap: 12px; align-items: center;">
         <button type="button" th:onclick="'fireDirectConfirm(' + ${shipment.id} + ', \'approve\')'" 
                 style="background: #059669; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: transform 0.2s, background 0.3s; display: inline-flex; align-items: center; gap: 8px;"
                 onmouseover="this.style.background='#047857'; this.style.transform='scale(1.03)'"
                 onmouseout="this.style.background='#059669'; this.style.transform='scale(1)'">
-            ✅ قبول
+            ✅ اعتماد الشحنة
         </button>
         
         <button type="button" th:onclick="'fireDirectConfirm(' + ${shipment.id} + ', \'reject\')'" 
                 style="background: #dc2626; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: transform 0.2s, background 0.3s; display: inline-flex; align-items: center; gap: 8px;"
                 onmouseover="this.style.background='#b91c1c'; this.style.transform='scale(1.03)'"
                 onmouseout="this.style.background='#dc2626'; this.style.transform='scale(1)'">
-            ❌ رفض 
+            ❌ رفض الشحنة
         </button>
     </div>
 </th:block>
 
-
     <button class="portal-btn btn btn-print" onclick="window.print()" style="background: #2563eb; border: none; color: white; cursor: pointer;">🖨️ طباعة الملف بالكامل</button>
+
+
+<button class="portal-btn" onclick="openOfficialReportPopUp()" style="background: #1e293b; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;"
+        onmouseover="this.style.background='#0f172a'" onmouseout="this.style.background='#1e293b'">
+    📄 عرض التقرير الرسمي للطباعة
+</button>
+
 </div>
 
     <div id="imgModal" class="modal">
@@ -464,5 +628,204 @@ function fireDirectConfirm(id, actionType) {
     }
 }
 </script>
+
+
+
+
+<script>
+function printOfficialReport() {
+    // تشغيل أمر الطباعة للمتصفح مباشرة
+    window.print();
+}
+function openOfficialReportPopUp() {
+    // 1. جلب البيانات الحالية من كروت الشاشة لضمان دقتها
+    const brokerName = "[[${shipment.customsbroker}]]";
+    const brokerNationalId = "[[${shipment.brokerNationalId != null ? shipment.brokerNationalId : 'غير مسجل'}]]";
+    const brokerPhone = "[[${shipment.brokerPhone}]]";
+    const entityName = "[[${shipment.entityName != null ? shipment.entityName : 'غير محددة'}]]";
+    const containerNumber = "[[${shipment.containerNumber}]]";
+    const statisticalCode = "[[${shipment.statisticalCode}]]";
+    const statusText = "[[${shipment.status.name() == 'APPROVED' ? 'معتمدة ومطابقة' : 'قيد المراجعة والتدقيق'}]]";
+    const approvedDate = "[[${shipment.approvedAt != null ? #temporals.format(shipment.approvedAt, 'yyyy/MM/dd HH:mm') : '---'}]]";
+    
+    // تاريخ اليوم للاستخراج
+    const today = new Date().toLocaleDateString('ar-LY', { year: 'numeric', month: '2-digit', day: '2-digit' });
+
+    // 2. فتح نافذة جديدة في المتصفح بمقاس مناسب لمعاينة الورقة
+    const reportWindow = window.open('', '_blank', 'width=900,height=800,scrollbars=yes,resizable=yes');
+
+    // 3. كتابة كود الـ HTML والتنسيق الرسمي (زي الوورد) بداخل الصفحة الجديدة
+    reportWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="ar" dir="rtl">
+        <head>
+            <meta charset="UTF-8">
+            <title>تقرير شحنة رسمي - رقم الحاوية ${containerNumber}</title>
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+            <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+            <style>
+                body {
+                    font-family: 'Cairo', Tahoma, sans-serif;
+                    background-color: #f8fafc;
+                    margin: 0;
+                    padding: 40px;
+                    color: #000;
+                }
+                /* شريط التحكم العلوي (يختفي عند الطباعة) */
+                .control-bar {
+                    background-color: #fff;
+                    padding: 15px;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                    margin-bottom: 30px;
+                    display: flex;
+                    justify-content: center;
+                    gap: 15px;
+                }
+                .btn {
+                    font-family: 'Cairo', sans-serif;
+                    font-weight: bold;
+                    padding: 10px 25px;
+                    border: none;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 14px;
+                }
+                .btn-print { background-color: #2563eb; color: white; }
+                .btn-close { background-color: #64748b; color: white; }
+                
+                /* تصميم الورقة الرسمية A4 */
+                .a4-paper {
+                    background-color: #fff;
+                    width: 100%;
+                    max-width: 800px;
+                    margin: 0 auto;
+                    padding: 50px;
+                    box-sizing: border-box;
+                    border: 1px solid #e2e8f0;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+                    position: relative;
+                }
+                .report-header {
+                    text-align: center;
+                    border-bottom: 3px double #000;
+                    padding-bottom: 20px;
+                    margin-bottom: 35px;
+                }
+                .report-header h1 { font-size: 24px; margin: 0 0 5px 0; font-weight: 900; }
+                .report-header p { font-size: 15px; margin: 5px 0; font-weight: bold; color: #334155; }
+                
+                /* الجدول الرسمي المستوحى من جداول الوورد */
+                .official-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 20px;
+                }
+                .official-table th, .official-table td {
+                    border: 1px solid #000000;
+                    padding: 14px;
+                    text-align: right;
+                    font-size: 15px;
+                }
+                .official-table th {
+                    background-color: #f1f5f9;
+                    font-weight: bold;
+                    width: 35%;
+                    color: #000;
+                }
+                .official-table td {
+                    color: #000;
+                }
+                
+                .report-footer {
+                    margin-top: 80px;
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 0 20px;
+                }
+                .signature-box {
+                    text-align: center;
+                    font-size: 14px;
+                    font-weight: bold;
+                }
+
+                /* 🖨️ إعدادات الطباعة الحقيقية للورقة */
+                @media print {
+                    body { background-color: #fff; padding: 0; }
+                    .control-bar { display: none !important; }
+                    .a4-paper { border: none; box-shadow: none; padding: 20px; }
+                    .official-table th { background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                }
+            </style>
+        </head>
+        <body>
+
+            <div class="control-bar">
+                <button class="btn btn-print" onclick="window.print()">🖨️ بدء طباعة المستند</button>
+                <button class="btn btn-close" onclick="window.close()">✕ إغلاق النافذة</button>
+            </div>
+
+            <div class="a4-paper">
+                <div class="report-header">
+                    <p>بيانات شحنة</p>
+                    <p style="font-size: 13px; font-weight: normal; text-align: left; margin-top: 10px;">تاريخ الاستخراج: ${today}</p>
+                </div>
+
+                <table class="official-table">
+                    <tr>
+                        <th> اسم المخلص الجمركي:</th>
+                        <td>${brokerName}</td>
+                    </tr>
+                    <tr>
+                        <th> الرقم الوطني للمخلص:</th>
+                        <td>${brokerNationalId}</td>
+                    </tr>
+                    <tr>
+                        <th> رقم هاتف المخلص:</th>
+                        <td dir="ltr" style="text-align: right;">${brokerPhone}</td>
+                    </tr>
+                    <tr>
+                        <th> الجهة :</th>
+                        <td>${entityName}</td>
+                    </tr>
+                    <tr>
+                        <th> رقم الحاوية:</th>
+                        <td style="font-family: monospace; font-weight: bold;">${containerNumber}</td>
+                    </tr>
+                    <tr>
+                        <th> الرمز الإحصائي :</th>
+                        <td style="font-weight: bold;">${statisticalCode}</td>
+                    </tr>
+                    <tr>
+                        <th> حالة الشحنة بالمنظومة:</th>
+                        <td style="font-weight: bold;">${statusText}</td>
+                    </tr>
+                    <tr>
+                        <th> تاريخ الاعتماد النهائي:</th>
+                        <td>${approvedDate}</td>
+                    </tr>
+                </table>
+
+                <div class="report-footer">
+                    <div class="signature-box">
+                        <p>توقيع وختم قسم </p>
+                        <p style="margin-top: 50px;">.........................................</p>
+                    </div>
+                    <div class="signature-box">
+                        <p>اعتماد رئيس قسم </p>
+                        <p style="margin-top: 50px;">.........................................</p>
+                    </div>
+                </div>
+            </div>
+
+        </body>
+        </html>
+    `);
+    
+    reportWindow.document.close();
+}
+</script>
+</div>
 </body>
 </html>
