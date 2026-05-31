@@ -54,396 +54,314 @@
         
         input[type="text"], input[type="tel"] { width: 100%; padding: 12px; border: 1px solid #cfd8ff; border-radius: 8px; box-sizing: border-box; font-family: 'Cairo'; }
     </style>
- <style>
-.page { display: none; animation: fadeIn 0.4s ease-in-out; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
- </style>
+    <style>
+        .page { display: none; animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 
-<style>
-.spinner {
-    width: 18px;
-    height: 18px;
-    border: 3px solid #e5e7eb;
-    border-top: 3px solid #10b981;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
+    <style>
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid #10b981;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
 
-@keyframes spin {
-    100% { transform: rotate(360deg); }
-}
-</style>
-<style>
-.img-card p {
-    margin-top: 15px;
-    font-size: 14px;
-    color: #1e293b; /* أسود كربوني */
-    font-weight: 700;
-    text-align: center;
-    border-bottom: 1px solid #e2e8f0; /* خط خفيف جداً */
-    padding-bottom: 5px;
-    min-width: 120px;
-}
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    <style>
+        .img-card p {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #1e293b; 
+            font-weight: 700;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0; 
+            padding-bottom: 5px;
+            min-width: 120px;
+        }
+    </style>
 
-</style>
+    <style>
+        /* Lightbox Overlay */
+        .lightbox-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 10000;
+        }
 
-<style>
-/* Lightbox Overlay */
-.lightbox-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.9);
-    display: none;
-    align-items: center; justify-content: center;
-    z-index: 10000;
-}
+        .lightbox-img {
+            max-width: 90%;
+            max-height: 85%;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
+        }
 
-.lightbox-img {
-    max-width: 90%;
-    max-height: 85%;
-    border-radius: 8px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    transition: transform 0.3s ease;
-}
+        .lightbox-close {
+            position: absolute;
+            top: 20px; right: 30px;
+            color: white; font-size: 40px; cursor: pointer;
+        }
 
-.lightbox-close {
-    position: absolute;
-    top: 20px; right: 30px;
-    color: white; font-size: 40px; cursor: pointer;
-}
+        .lightbox-nav {
+            position: absolute;
+            top: 50%; transform: translateY(-50%);
+            color: white; font-size: 50px; cursor: pointer;
+            background: rgba(255,255,255,0.1);
+            padding: 10px; border-radius: 50%;
+            user-select: none;
+        }
 
-.lightbox-nav {
-    position: absolute;
-    top: 50%; transform: translateY(-50%);
-    color: white; font-size: 50px; cursor: pointer;
-    background: rgba(255,255,255,0.1);
-    padding: 10px; border-radius: 50%;
-    user-select: none;
-}
+        .lightbox-prev { left: 20px; }
+        .lightbox-next { right: 20px; }
 
-.lightbox-prev { left: 20px; }
-.lightbox-next { right: 20px; }
+        .lightbox-nav:hover { background: rgba(255,255,255,0.3); }
 
-.lightbox-nav:hover { background: rgba(255,255,255,0.3); }
+        .preview-grid img {
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .preview-grid img:hover { opacity: 0.8; }
+    </style>
 
-/* تحسين شكل الصور في الشبكة لتكون قابلة للضغط */
-.preview-grid img {
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-.preview-grid img:hover { opacity: 0.8; }
-</style>
+    <style>
+        .preview-item {
+            position: relative;
+            display: inline-block;
+        }
 
-<style>
-.preview-item {
-    position: relative;
-    display: inline-block;
-}
+        .delete-photo-btn {
+            position: absolute;
+            top: -5px;
+            left: -5px; 
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
 
-.delete-photo-btn {
-    position: absolute;
-    top: -5px;
-    left: -5px; /* وضعناه جهة اليسار ليميز عن رقم الصورة */
-    background: #ef4444;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
+        .delete-photo-btn:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+    </style>
+    <style>
+        .save-btn-container {
+            display: flex;
+            justify-content: center; 
+            align-items: center;
+            margin: 40px 0;
+            width: 100%;
+        }
 
-.delete-photo-btn:hover {
-    background: #dc2626;
-    transform: scale(1.1);
-}
-</style>
-<style>
-.save-btn-container {
-    display: flex;
-    justify-content: center; /* التوسيط الأفقي */
-    align-items: center;
-    margin: 40px 0;
-    width: 100%;
-}
+        .save-btn {
+            display: none; 
+            width: 280px; 
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
+            color: #ffffff;
+            background: linear-gradient(135deg, rgb(0, 128, 192) 0%, #334155 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px; 
+            cursor: pointer;
+            box-shadow: 0 30px 25px rgba(0, 0, 0, 0.2);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            outline: none;
+        }
 
-.save-btn {
-    display: none; /* سيتم إظهاره عبر JS */
-    width: 280px; /* عرض ثابت وأنيق */
-    padding: 15px 30px;
-    font-size: 18px;
-    font-weight: 700;
-    font-family: 'Cairo', sans-serif;
-    color: #ffffff;
-    
-    /* تدرج لوني فخم (أزرق ملكي إلى كحلي عميق) */
-    background: linear-gradient(135deg, rgb(0, 128, 192) 0%, #334155 100%);
-    
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 50px; /* حواف دائرية كاملة تعطي فخامة */
-    cursor: pointer;
-    
-    /* ظل ناعم جداً وعميق */
-    box-shadow: 0 30px 25px rgba(0, 0, 0, 0.2);
-    
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    outline: none;
-}
+        .save-btn:hover {
+            transform: translateY(-5px); 
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); 
+            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.3);
+            letter-spacing: 2px;
+        }
 
-/* تأثير التمرير (Hover) */
-.save-btn:hover {
-    transform: translateY(-5px); /* يرتفع قليلاً */
-    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); /* يتغير للون أفتح */
-    box-shadow: 0 15px 35px rgba(59, 130, 246, 0.3);
-    letter-spacing: 2px;
-}
+        .save-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+    <style>
+        #cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
+            gap: 25px; 
+            justify-content: center; 
+            align-items: start;      
+            padding: 20px;           
+        }
 
-/* تأثير الضغط */
-.save-btn:active {
-    transform: scale(0.95);
-}
-</style>
-<style>
-#cards-container {
-    display: grid;
-    /* التعديل هنا: جعل أقل عرض للكارت 350px بدلاً من 280px ليعطي فخامة في اللابتوب */
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
-    gap: 25px; /* تكبير المسافة بين الكروت قليلاً */
-    justify-content: center; 
-    align-items: start;      
-    padding: 20px;           
-}
+        @media screen and (min-width: 1200px) {
+            .main-container {
+                max-width: 1200px; 
+            }
+            
+            .form-group {
+                padding: 25px; 
+                background: rgb(218, 218, 218);
+                backdrop-filter: blur(10px); 
+                border: 1px solid rgba(255, 255, 255, 0.3);
+            }
+        }
+    </style>
+    <style>
+        .halo-logo {
+            display: block;
+            width: 310px;
+            margin: auto; 
+            filter: drop-shadow(0 0 5px rgba(218, 165, 32, 0.3)); 
+            animation: haloGlow 8s ease-in-out infinite;
+        }
 
-/* إضافة لمسة احترافية خاصة بـ "اللابتوب" فقط */
-@media screen and (min-width: 1200px) {
-    .main-container {
-        max-width: 1200px; /* تكبير الحاوية الرئيسية لتناسب الشاشات الكبيرة */
-    }
-    
-    .form-group {
-        padding: 25px; /* زيادة المساحة الداخلية للكارت ليعطي شعوراً بالراحة */
-    background: rgb(218, 218, 218);
-    backdrop-filter: blur(10px); /* تنعيم ما خلف الكارد */
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
+        @keyframes haloGlow {
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(218, 165, 32, 0.3)); }
+            60% { filter: drop-shadow(0 0 15px rgba(218, 165, 32, 0.6)); }
+        }
+        .gold-shine { position: relative; overflow: hidden; display: inline-block; }
+        .gold-shine::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+            transition: all 0.6s;
+        }
+        .gold-shine:hover::before { left: 150%; transition: 0.8s; }
+        .luxury-float { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1)); }
+        .luxury-float:hover { transform: translateY(-8px); filter: drop-shadow(0 20px 30px rgba(184, 134, 11, 0.3)); }
+    </style>
+    <style>
+        .form-group {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .form-group:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-color: #3b82f6; 
+        }
+        .form-group:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+    </style>
 
+    <style>
+        @keyframes strongPulse {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.02); filter: brightness(1.2) drop-shadow(0 0 15px rgba(59, 130, 246, 0.6)); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+        .activate-pulse { animation: strongPulse 1.5s ease-in-out; }
+    </style>
+    <style>
+        .form-group {
+            background: #ffffff;
+            border-radius: 15px; 
+            padding: 20px;
+            border: 1px solid #f1f5f9; 
+            box-shadow: 0 9px 6px -1px rgba(0, 0, 0, 0.05), 0 5px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease; 
+        }
+        .form-group:hover {
+            box-shadow: 0 20px 25px -7px rgba(0, 0, 0, 0.1), 0 10px 10px -7px rgba(0, 0, 0, 0.04);
+            transform: translateY(-6px); 
+            border-color: #3b82f6; 
+        }
+    </style>
 
-</style>
-<style>
-.halo-logo {
-    display: block;
-    width: 310px;
-    margin: auto; /* للتوسيط */
-    
-    /* إضافة ظل خلفي ناعم جداً على شكل هالة */
-    filter: drop-shadow(0 0 5px rgba(218, 165, 32, 0.3)); /* لون ذهبي باهت */
-    
-    /* حركة التلاشي والظهور الهادئة جداً */
-    animation: haloGlow 8s ease-in-out infinite;
-}
-
-@keyframes haloGlow {
-    0%, 100% {
-        filter: drop-shadow(0 0 5px rgba(218, 165, 32, 0.3));
-    }
-    60% {
-        filter: drop-shadow(0 0 15px rgba(218, 165, 32, 0.6)); /* يزداد التوهج */
-    }
-}
-.gold-shine {
-    position: relative;
-    overflow: hidden;
-    display: inline-block;
-}
-
-.gold-shine::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(
-        120deg, 
-        transparent, 
-        rgba(255, 255, 255, 0.6), 
-        transparent
-    );
-    transition: all 0.6s;
-}
-
-/* يتحرك الوميض عند مرور الماوس أو تلقائياً كل فترة */
-.gold-shine:hover::before {
-    left: 150%;
-    transition: 0.8s;
-}
-.luxury-float {
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));
-}
-
-.luxury-float:hover {
-    transform: translateY(-8px); /* ارتفاع بسيط */
-    filter: drop-shadow(0 20px 30px rgba(184, 134, 11, 0.3)); /* ظل ذهبي دافئ */
-}
-
-</style>
-<style>
-/* تأثير الكاردات الاحترافي */
-.form-group {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 15px;
-    border: 1px solid #e2e8f0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* حركة الرفع الهادئة عند مرور الماوس */
-.form-group:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    border-color: #3b82f6; /* لون أزرق خفيف للإطار */
-}
-
-/* تأثير "التركيز" لما المستخدم يبدأ يكتب */
-.form-group:focus-within {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-</style>
-
-<style>
-/* تعريف حركة الوهج والقوة */
-@keyframes strongPulse {
-    0% { transform: scale(1); filter: brightness(1); }
-    50% { 
-        transform: scale(1.02); /* تكبير خفيف */
-        filter: brightness(1.2) drop-shadow(0 0 15px rgba(59, 130, 246, 0.6)); /* وهج أزرق قوي */
-    }
-    100% { transform: scale(1); filter: brightness(1); }
-}
-
-/* الكلاس الذي سيتم تفعيله كل دقيقة */
-.activate-pulse {
-    animation: strongPulse 1.5s ease-in-out; /* الحركة تستمر ثانية ونصف */
-}
-</style>
-<style>
-/* تأثير الضل للكاردات */
-.form-group {
-    background: #ffffff;
-    border-radius: 15px; /* حواف دائرية ناعمة */
-    padding: 20px;
-    border: 1px solid #f1f5f9; /* إطار خفيف جداً */
-    
-    /* الضل الأساسي: ناعم وغير تقيل */
-    box-shadow: 0 9px 6px -1px rgba(0, 0, 0, 0.05), 
-                0 5px 4px -1px rgba(0, 0, 0, 0.03);
-    
-    transition: all 0.3s ease; /* عشان الحركة تكون ناعمة */
-}
-
-/* تأثير الضل عند مرور الماوس (Hover) */
-.form-group:hover {
-    /* ضل أقوى شوية بيدي إحساس إن الكارد قرب من عينك */
-    box-shadow: 0 20px 25px -7px rgba(0, 0, 0, 0.1), 
-                0 10px 10px -7px rgba(0, 0, 0, 0.04);
-    
-    transform: translateY(-6px); /* رفعة بسيطة للفوق */
-    border-color: #3b82f6; /* تغيير لون الإطار للأزرق */
-}
-</style>
-
-<style>
-/* كود التجاوب - لضمان عمل الصفحة على اللابتوب والأيباد */
-@media screen and (max-width: 1024px) {
-    .main-container {
-        width: 95%;
-        padding: 15px;
-        margin: 10px auto;
-    }
-
-    /* جعل الحقول تأخذ مساحة أكبر في الأجهزة المتوسطة */
-    #page1 > div {
-        grid-template-columns: 1fr !important; /* تحويل الشبكة لعمود واحد */
-        gap: 10px;
-    }
-
-    .form-group {
-        grid-column: span 2 !important; /* إجبار الكروت على أخذ العرض كاملاً */
-    }
-
-    #cards-container {
-        grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)) !important;
-    }
-
-    .save-btn {
-        width: 90%; /* تكبير زر الحفظ ليناسب اللمس في الأيباد */
-    }
-
-    .halo-logo {
-        width: 220px; /* تصغير الشعار قليلاً في الأجهزة الأصغر */
-    }
-}
-
-/* تحسينات إضافية للشاشات العريضة جداً (اللابتوب الكبير) */
-@media screen and (min-width: 1025px) {
-    #cards-container {
-        grid-template-columns: repeat(3, 1fr) !important; /* عرض 3 كروت في الصف في الشاشات الواسعة */
-    }
-}
-</style>
+    <style>
+        @media screen and (max-width: 1024px) {
+            .main-container { width: 95%; padding: 15px; margin: 10px auto; }
+            #page1 > div { grid-template-columns: 1fr !important; gap: 10px; }
+            .form-group { grid-column: span 2 !important; }
+            #cards-container { grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)) !important; }
+            .save-btn { width: 90%; }
+            .halo-logo { width: 220px; }
+        }
+        @media screen and (min-width: 1025px) {
+            #cards-container { grid-template-columns: repeat(3, 1fr) !important; }
+        }
+    </style>
 </head>
 <body>
 
 <center>
 <div class="logo-container">
     <div class="luxury-logo">
-<img th:src="@{/images/gold_long.png}" class="halo-logo" /></div>
+        <img th:src="@{/images/gold_long.png}" class="halo-logo" />
+    </div>
+</div>
 </center>
 
- <br>
-
+<br>
 
 <div class="main-container">
     <h2 class="title-messiri" id="mainTitle">إضافة بيانات الشحنة</h2>
     
-  
-<form id="mainForm" th:action="@{/shipments/save}" th:object="${shipment}" method="post" enctype="multipart/form-data">        
-        <div id="page1" class="page active-page">
+    <form id="mainForm" th:action="@{/shipments/save}" th:object="${shipment}" method="post" enctype="multipart/form-data">        
+   <div id="page1" class="page active-page">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-   <div class="form-group">
-          <label> المخلص الجمركي:</label>
-          <input type="text" th:field="*{customsbroker}" id="brokerInput" required placeholder="اسم المخلص او المخول">
-   </div>
-   <div class="form-group">
-         <label>📞 هاتف المخلص:</label>
-         <input type="tel" 
-             th:field="*{brokerPhone}" 
-             id="phoneInput" 
-             maxlength="10" 
-             oninput="this.value = this.value.replace(/[^0-9]/g, '')" 
-             placeholder="رقم الهاتف"
-             required>
-     </div>
-                <div class="form-group"><label> رقم الحاوية:</label><input type="text" th:field="*{containerNumber}" placeholder="رقم الحاوية:"></div>
-                <div class="form-group"><label> الرمز الإحصائي:</label><input type="text" th:field="*{statisticalCode}" placeholder="االرمز الإحصائي:"></div>
+               <div class="form-group">
+                      <label>👤 المخلص الجمركي:</label>
+                      <input type="text" th:field="*{customsbroker}" id="brokerInput" required placeholder="اسم المخلص او المخول">
+               </div>
+               
+               <div class="form-group">
+                      <label>🆔 الرقم الوطني للمخلص:</label>
+                      <input type="text" 
+                             th:field="*{brokerNationalId}" 
+                             id="brokerNationalIdInput" 
+                             maxlength="12" 
+                             oninput="this.value = this.value.replace(/[^0-9]/g, '')" 
+                             required 
+                             placeholder="الرقم الوطني المكون من 12 رقماً">
+               </div>
+
+               <div class="form-group">
+                     <label>📞 هاتف المخلص:</label>
+                     <input type="tel" 
+                         th:field="*{brokerPhone}" 
+                         id="phoneInput" 
+                         maxlength="10" 
+                         oninput="this.value = this.value.replace(/[^0-9]/g, '')" 
+                         placeholder="رقم الهاتف"
+                         required>
+               </div>
+
+               <div class="form-group">
+                      <label>🏢 اسم الجهة أو الشركة المالكـة:</label>
+                      <input type="text" th:field="*{entityName}" id="entityNameInput" required placeholder="اسم الشركة أو الجهة التابعة لها الشحنة">
+               </div>
+
+                <div class="form-group"><label>📦 رقم الحاوية:</label><input type="text" th:field="*{containerNumber}" id="containerNumberInput" placeholder="رقم الحاوية"></div>
+                <div class="form-group"><label>📊 الرمز الإحصائي:</label><input type="text" th:field="*{statisticalCode}" id="statisticalCodeInput" placeholder="الرمز الإحصائي"></div>
                 <div class="form-group" style="grid-column: span 2;"><label>📅 تاريخ التسجيل:</label><input type="text" id="createdAtInput" name="createdAtStr" ></div>
             </div>
         </div>
 
         <div id="page2" class="page">
-  
             <div id="cards-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;"></div>          
-  
         </div>
 
         <div class="pagination">
@@ -451,18 +369,16 @@
             <button type="button" onclick="showPage(2)" id="btn2">2 - المستندات</button>
         </div>
 
-<div class="save-btn-container">
-    <button type="button" id="finalSaveBtn" class="save-btn" onclick="validateAndSave()">
-        <span> حفظ  </span>
-    </button>
-</div>    </form>
+        <div class="save-btn-container">
+            <button type="button" id="finalSaveBtn" class="save-btn" onclick="validateAndSave()">
+                <span> حفظ  </span>
+            </button>
+        </div>    
+    </form>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-/* =========================
-   1. أنواع المستندات
-========================= */
 const docTypes = [
     {id: 'BOL', title: 'بوليصة شحن'},
     {id: 'DO', title: 'إذن تسليم'},
@@ -475,9 +391,6 @@ const docTypes = [
     {id: 'SI', title: 'رمز إحصائي'}
 ];
 
-/* =========================
-   2. التاريخ
-========================= */
 flatpickr("#createdAtInput", {
     dateFormat: "Y-m-d",
     altInput: true,
@@ -485,18 +398,13 @@ flatpickr("#createdAtInput", {
     defaultDate: "today"
 });
 
-/* =========================
-   3. التنقل بين الصفحات
-========================= */
 function showPage(num) {
-    // 1. التنقل بين الصفحات (الكود القديم بتاعك)
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
     document.querySelectorAll('.pagination button').forEach(b => b.classList.remove('active'));
 
     document.getElementById("page" + num).classList.add("active-page");
     document.getElementById("btn" + num).classList.add("active");
 
-    // 2. تحديث العنوان بناءً على رقم الصفحة
     const mainTitle = document.getElementById('mainTitle');
     if (num === 1) {
         mainTitle.textContent = "إضافة بيانات الشحنة";
@@ -504,7 +412,6 @@ function showPage(num) {
         mainTitle.textContent = "إضافة مستندات الشحنة";
     }
 
-    // 3. التحكم في ظهور زر الحفظ (الكود القديم بتاعك)
     const saveBtn = document.getElementById('finalSaveBtn');
     if (num === 2) {
         saveBtn.style.display = 'block'; 
@@ -513,9 +420,6 @@ function showPage(num) {
     }
 }
 
-/* =========================
-   4. بناء الكروت
-========================= */
 const cardsContainer = document.getElementById('cards-container');
 docTypes.forEach(doc => {
     cardsContainer.insertAdjacentHTML('beforeend', `
@@ -534,9 +438,6 @@ docTypes.forEach(doc => {
     `);
 });
 
-/* =========================
-   5. إضافة وحذف وملفات
-========================= */
 function addUploadRow(type) {
     const container = document.getElementById(`container-${type}`);
     const count = container.querySelectorAll('.upload-row').length;
@@ -599,20 +500,25 @@ function toggleGrid(type) {
     grid.style.display = grid.style.display === "grid" ? "none" : "grid";
 }
 
-/* =========================
-   11. التحقق + الحفظ + التنبيه بالشعار
-========================= */
+/* =======================================================
+   🔥 التعديل المعتمد للتحقق + الحفظ لقراءة الخطأ من السيرفر
+======================================================= */
 async function validateAndSave() {
     const broker = document.getElementById('brokerInput');
+    const brokerNationalId = document.getElementById('brokerNationalIdInput'); // الحقل الجديد 1
     const phone = document.getElementById('phoneInput');
-    const container = document.querySelector('[name="containerNumber"]');
-    const statistical = document.querySelector('[name="statisticalCode"]');
+    const entityName = document.getElementById('entityNameInput'); // الحقل الجديد 2
+    const container = document.getElementById('containerNumberInput'); // تم التحديث ليقرأ بالـ id
+    const statistical = document.getElementById('statisticalCodeInput'); // تم التحديث ليقرأ بالـ id
     const form = document.getElementById('mainForm');
     const btn = document.getElementById('finalSaveBtn');
 
+    // مصفوفة الحقول متضمنة الإضافات الجديدة
     const fields = [
         { element: broker, name: "اسم المخلص" },
+        { element: brokerNationalId, name: "الالرقم الوطني للمخلص" },
         { element: phone, name: "رقم الهاتف" },
+        { element: entityName, name: "اسم الجهة" },
         { element: container, name: "رقم الحاوية" },
         { element: statistical, name: "الرمز الإحصائي" }
     ];
@@ -633,7 +539,7 @@ async function validateAndSave() {
         return;
     }
 
-    // --- التعديل الجديد: التحقق من طول رقم الهاتف (10 أرقام بالضبط) ---
+    // التحقق من طول رقم الهاتف (10 أرقام)
     const phoneValue = phone.value.trim();
     if (phoneValue.length !== 10) {
         phone.style.cssText = "border: 2px solid red !important; background-color: #fff5f5;";
@@ -641,7 +547,15 @@ async function validateAndSave() {
         showToast("⚠️ رقم الهاتف يجب أن يكون 10 أرقام بالضبط", "error");
         return;
     }
-    // -----------------------------------------------------------
+
+    // التحقق من طول الرقم الوطني (12 رقماً)
+    const nationalIdValue = brokerNationalId.value.trim();
+    if (nationalIdValue.length !== 12) {
+        brokerNationalId.style.cssText = "border: 2px solid red !important; background-color: #fff5f5;";
+        showPage(1);
+        showToast("⚠️ الرقم الوطني للمخلص يجب أن يكون 12 رقماً بالضبط", "error");
+        return;
+    }
 
     let missingDocs = [];
     docTypes.forEach(doc => {
@@ -661,18 +575,37 @@ async function validateAndSave() {
     try {
         const formData = new FormData(form);
         const res = await fetch(form.action, { method: "POST", body: formData });
+        
         if (res.ok) {
             showToast("✅ تم الحفظ بنجاح", "success");
             setTimeout(() => location.reload(), 2000);
-        } else { throw new Error(); }
+        } else { 
+            try {
+                const errorJson = await res.json();
+                if (errorJson && errorJson.message) {
+                    showToast(errorJson.message, "error");
+                } else {
+                    showToast("❌ عذراً، الرمز الإحصائي مكرر أو البيانات غير صحيحة!", "error");
+                }
+            } catch (jsonErr) {
+                const errorText = await res.text();
+                if (errorText && errorText.includes("الرمز الإحصائي")) {
+                    showToast(errorText, "error");
+                } else {
+                    showToast("❌ عذراً، الرمز الإحصائي مكرر أو البيانات غير صحيحة!", "error");
+                }
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = "<span> حفظ </span>";
+        }
     } catch (err) {
+        console.error(err);
         showToast("❌ فشل الاتصال بالسيرفر", "error");
         btn.disabled = false;
-        btn.innerHTML = "💾 حفظ الشحنة والأرشيف";
+        btn.innerHTML = "<span> حفظ </span>";
     }
 }
-
-// دالة التنبيه المعتمدة بالشعار (120px)
 function showToast(message, type = "success") {
     const overlay = document.createElement("div");
     overlay.style.cssText = `position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:10000; opacity:0; transition:0.3s;`;
@@ -686,17 +619,14 @@ function showToast(message, type = "success") {
         <div style="font-size:18px; font-weight:bold; font-family:'Cairo'; color:#1e293b;">${message}</div>
     `;
 
-    box.style.cssText = `background:white; padding:30px 45px; border-radius:20px; text-align:center; box-shadow:0 20px 40px rgba(0,0,0,0.3); transform:scale(0.8); transition:0.3s; max-width:400px; border-top:6px solid ${type === "success" ? "#10b981" : "#ef4444"};`;
+    box.style.cssText = `background:white; padding:30px 45px; border-radius:20px; text-align:center; box-shadow:0 20px 40px rgba(0,0,0,0.3); transform:scale(0.8); transition:0.3s; max-width:420px; border-top:6px solid ${type === "success" ? "#10b981" : "#ef4444"};`;
 
     overlay.appendChild(box);
     document.body.appendChild(overlay);
     setTimeout(() => { overlay.style.opacity = "1"; box.style.transform = "scale(1)"; }, 50);
-    setTimeout(() => { overlay.style.opacity = "0"; box.style.transform = "scale(0.8)"; setTimeout(() => overlay.remove(), 300); }, 3000);
+    setTimeout(() => { overlay.style.opacity = "0"; box.style.transform = "scale(0.8)"; setTimeout(() => overlay.remove(), 300); }, 3500);
 }
 
-/* =========================
-   12. تنظيف الصور والضغط واللايت بوكس
-========================= */
 window.addEventListener("load", () => {
     if (sessionStorage.getItem("resetForm") === "1") {
         sessionStorage.removeItem("resetForm");
@@ -746,30 +676,20 @@ function closeLightbox(event) { if (event.target.id === 'lightbox') document.get
 </div>
 
 <script>
-// دالة لتشغيل الحركة القوية كل دقيقة
 function triggerStrongAnimation() {
-    const mainTitle = document.getElementById('mainTitle'); // سنطبقها على العنوان
-    
+    const mainTitle = document.getElementById('mainTitle');
     if (mainTitle) {
-        // إضافة الكلاس لتشغيل الحركة
         mainTitle.classList.add('activate-pulse');
-        
-        // إزالة الكلاس بعد انتهاء الحركة (بعد 1.5 ثانية) عشان نقدر نشغلها تاني
         setTimeout(() => {
             mainTitle.classList.remove('activate-pulse');
         }, 1500);
     }
 }
-
-// ضبط العداد ليشتغل كل 60,000 مللي ثانية (دقيقة واحدة)
 setInterval(triggerStrongAnimation, 13000);
-
-// تشغيلها مرة واحدة فور تحميل الصفحة كـ "ترحيب"
 window.addEventListener('load', () => {
     setTimeout(triggerStrongAnimation, 1000); 
 });
 </script>
-
 
 </body>
 </html>

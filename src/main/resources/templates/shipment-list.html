@@ -399,9 +399,8 @@
     </div> 
 
     <div class="header-info">
-   <h2>الاستفسار  والمعالجة</h2>    
-   
-    <a th:href="@{/}" class="portal-btn">
+      <h2>الاستفسار  والمعالجة</h2>
+        <a th:href="@{/}" class="portal-btn">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                 <polyline points="9 22 9 12 15 12 15 22"></polyline>
@@ -470,7 +469,7 @@
             <thead class="custom-thead">
                 <tr>
                     <th>رقم الحاوية</th>
-                    <th>المخلص الجمركي</th>
+                    <th>المخلص الجمركي والجهة</th>
                     <th>الرمز الإحصائي</th>
                     <th>الحالة</th>
                     <th>العمليات</th>
@@ -480,8 +479,12 @@
             <tbody>
                 <tr th:each="s : ${shipments}">
                     <td><strong th:text="${s.containerNumber}" style="color: var(--primary3); font-size: 1.1rem;"></strong></td>
-                    <td th:text="${s.customsbroker}" style="color: var(--primary3); font-size: 1.1rem;"></td>
-                    <td><span class="stat-badge" th:text="${s.statisticalCode}"></span></td>
+<td>
+    <div style="display: flex; flex-direction: column; gap: 4px; text-align: center;">
+        <span th:text="${s.customsbroker}" style="color: var(--primary3); font-size: 1.05rem; font-weight: bold;"></span>
+        <span th:text="${s.entityName}" style="color: rgb(0, 0, 160); font-size: 0.85rem; font-family: 'Cairo'; background: #f1f5f9; padding: 2px 8px; border-radius: 6px; width: fit-content; margin: 0 auto;"></span>
+    </div>
+</td>                    <td><span class="stat-badge" th:text="${s.statisticalCode}"></span></td>
 
                     <td>
                         <div th:if="${s.status.name() == 'REJECTED'}">
@@ -699,7 +702,6 @@ document.querySelector('#table-container').innerHTML = `
         return; // نوقفوا التنفيذ هنا وما نطلبوش بيانات من السيرفر
     }
 
-    // 3. لو مكانتش نشطة (يعني أول نقرة عشان يفتح القائمة)، نفذ المنطق الطبيعي بتاع الجلب
     document.querySelectorAll('.tab-link').forEach(btn => btn.classList.remove('active'));
     el.classList.add('active');
 

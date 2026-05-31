@@ -20,6 +20,13 @@ public class Shipment {
     private String brokerPhone;       // رقم هاتف المخلص
     private String statisticalCode;   // الرمز الإحصائي
 
+    
+    @Column(name = "entity_name")
+    private String entityName; // اسم الجهة
+
+    @Column(name = "broker_national_id", length = 12) // الرقم الوطني الليبي عادة 12 رقماً
+    private String brokerNationalId; // الرقم الوطني للمخلص
+    
     @Column(name = "rejection_reason", length = 1000)
     private String rejectionReason;   // حقل لتخزين سبب الرفض
 
@@ -91,4 +98,21 @@ public class Shipment {
  // مع إضافة الـ Getter و Setter له
     public String getRejectionReason() { return rejectionReason; }
     public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+
+
+    
+    
+    public String getEntityName() {
+        return entityName;
+    }
+    public void setEntityName(String entityName) {
+        this.entityName = entityName;
+    }
+
+    public String getBrokerNationalId() {
+        return brokerNationalId;
+    }
+    public void setBrokerNationalId(String brokerNationalId) {
+        this.brokerNationalId = brokerNationalId;
+    }
 }

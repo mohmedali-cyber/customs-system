@@ -209,14 +209,51 @@
     <form id="mainForm" enctype="multipart/form-data">
         <input type="hidden" id="currentId" name="id">
         
-        <div id="page1" class="page active-page">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div class="form-group"><label>المخلص الجمركي:</label><input type="text" id="brokerInput" name="customsbroker"></div>
-                <div class="form-group"><label>📞 هاتف المخلص:</label><input type="tel" id="phoneInput" name="brokerPhone" maxlength="10"></div>
-                <div class="form-group"><label>رقم الحاوية:</label><input type="text" id="containerInput" name="containerNumber"></div>
-                <div class="form-group"><label>الرمز الإحصائي:</label><input type="text" id="statCodeInput" name="statisticalCode"></div>
-            </div>
+      <div id="page1" class="page active-page">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div class="form-group">
+            <label>👤 المخلص الجمركي:</label>
+            <input type="text" id="brokerInput" name="customsbroker" required placeholder="اسم المخلص">
         </div>
+        
+        <div class="form-group">
+            <label>🆔 الرقم الوطني للمخلص:</label>
+            <input type="text" 
+                   id="brokerNationalIdInput" 
+                   name="brokerNationalId" 
+                   maxlength="12" 
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '')" 
+                   required 
+                   placeholder="الرقم الوطني المكون من 12 رقماً">
+        </div>
+
+        <div class="form-group">
+            <label>📞 هاتف المخلص:</label>
+            <input type="tel" 
+                   id="phoneInput" 
+                   name="brokerPhone" 
+                   maxlength="10" 
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '')" 
+                   required 
+                   placeholder="رقم الهاتف المتنقل">
+        </div>
+
+        <div class="form-group">
+            <label>🏢 اسم الجهة أو الشركة المالكـة:</label>
+            <input type="text" id="entityNameInput" name="entityName" required placeholder="اسم الشركة أو الجهة">
+        </div>
+
+        <div class="form-group">
+            <label>📦 رقم الحاوية:</label>
+            <input type="text" id="containerInput" name="containerNumber" readonly style="background-color: #f1f5f9; cursor: not-allowed; font-weight: bold; color: #475569;">
+        </div>
+        
+        <div class="form-group">
+            <label>📊 الرمز الإحصائي:</label>
+            <input type="text" id="statCodeInput" name="statisticalCode" readonly style="background-color: #f1f5f9; cursor: not-allowed; font-weight: bold; color: #475569;">
+        </div>
+    </div>
+</div>
 
         <div id="page2" class="page">
             <div id="cards-container"></div>          
@@ -301,12 +338,16 @@ function searchAndFill() {
             searchBtn.disabled = false;
             
             // تعبئة عناصر المدخلات بالبيانات المسترجعة
-            document.getElementById('currentId').value = data.id;
-            document.getElementById('brokerInput').value = data.customsbroker || '';
-            document.getElementById('phoneInput').value = data.brokerPhone || '';
-            document.getElementById('containerInput').value = data.containerNumber || ''; 
-            document.getElementById('statCodeInput').value = data.statisticalCode || '';
-
+            // تعبئة عناصر المدخلات بالبيانات المسترجعة بالكامل
+document.getElementById('currentId').value = data.id;
+document.getElementById('brokerInput').value = data.customsbroker || '';
+document.getElementById('phoneInput').value = data.brokerPhone || '';
+document.getElementById('containerInput').value = data.containerNumber || ''; 
+document.getElementById('statCodeInput').value = data.statisticalCode || '';
+document.getElementById('brokerNationalIdInput').value = data.brokerNationalId || '';
+document.getElementById('entityNameInput').value = data.entityName || '';
+         
+         
             // إظهار الفورم بالكامل فور العثور بنجاح وحذف أي تلميح للجمود
             document.getElementById('mainForm').style.display = "block";
             
@@ -456,6 +497,25 @@ function showPage(num) {
 }
 
 async function submitUpdate() {
+    // 1. جلب القيم من الحقول الجديدة والقديمة للفحص قبل الإرسال
+    const brokerName = document.getElementById('brokerInput').value.trim();
+    const nationalId = document.getElementById('brokerNationalIdInput').value.trim();
+    const phone = document.getElementById('phoneInput').value.trim();
+    const entityName = document.getElementById('entityNameInput').value.trim();
+
+    // 2. التحقق من أن الحقول الأساسية ليست فارغة
+    if (!brokerName || !nationalId || !phone || !entityName) {
+        showCustomAlert("⚠️", "بيانات ناقصة", "يرجى ملء جميع الحقول الأساسية أولاً (المخلص، الرقم الوطني، الهاتف، واسم الجهة) قبل الحفظ.");
+        return; // إيقاف تنفيذ الدالة وعدم إرسال أي شيء للسيرفر
+    }
+
+    // 3. التحقق من طول الرقم الوطني (يجب أن يكون 12 رقماً بالضبط)
+    if (nationalId.length !== 12) {
+        showCustomAlert("⚠️", "تحقق من البيانات", "يجب أن يتكون الرقم الوطني للمخلص من 12 رقماً تماماً.");
+        return; // إيقاف تنفيذ الدالة
+    }
+
+    // 4. إذا كانت البيانات سليمة.. يبدأ كود الحفظ والمزامنة الأصلي الخاص بك:
     const btn = document.getElementById('finalSaveBtn');
     const id = document.getElementById('currentId').value;
     
