@@ -34,10 +34,9 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
                                   @Param("status") ShipmentStatus status, 
                                   Pageable pageable);
 
-    // ✅ تم تصحيح المسار هنا ليتوافق مع مشروعك الحالي
-    @Query("SELECT s FROM Shipment s WHERE s.status IN " +
-           "(com.example.customs_system.entity.ShipmentStatus.APPROVED, " +
-           "com.example.customs_system.entity.ShipmentStatus.COMPLETED)")
+    // ✅ تم تعديل الاستعلام هنا للتخلص من اسم الـ Package المسبب للمشكلة
+    @Query("SELECT s FROM Shipment s WHERE s.status = com.customs.customs_system.entity.ShipmentStatus.APPROVED " +
+           "OR s.status = com.customs.customs_system.entity.ShipmentStatus.COMPLETED")
     Page<Shipment> findArchivedBasic(Pageable pageable);
 
     @Modifying
@@ -46,10 +45,9 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
 
     long countByStatus(ShipmentStatus status);
 
-    // ✅ تم تصحيح المسار هنا أيضاً ليتوافق مع مشروعك المحلي
-    @Query("SELECT COUNT(s) FROM Shipment s WHERE s.status IN " +
-           "(com.example.customs_system.entity.ShipmentStatus.APPROVED, " +
-           "com.example.customs_system.entity.ShipmentStatus.COMPLETED)")
+    // ✅ تم تعديل الاستعلام هنا أيضاً ليتطابق مع الـ Package المعتمدة في ريندر والمشروع الحالي
+    @Query("SELECT COUNT(s) FROM Shipment s WHERE s.status = com.customs.customs_system.entity.ShipmentStatus.APPROVED " +
+           "OR s.status = com.customs.customs_system.entity.ShipmentStatus.COMPLETED")
     long countArchived();
 
     @Query("SELECT COUNT(s) FROM Shipment s")
@@ -76,7 +74,7 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
     @Query("SELECT s FROM Shipment s WHERE " +
            "LOWER(s.containerNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(s.customsbroker) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(s.statisticalCode) LIKE LOWER(CONCAT('%', :keyword, '%'))") // 🛠️ تم إزالة القوس الثالث الزائد هنا
+           "LOWER(s.statisticalCode) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Shipment> searchByKeyword(@Param("keyword") String keyword);
 
     // 🌟 التعديل المعتمد: إضافة LEFT JOIN FETCH لضمان جلب الصور مع الشحنة أثناء البحث
@@ -84,7 +82,7 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
     Optional<Shipment> findAllByAnyId(@Param("q") String q);
 
     // =========================================================================
-    // 🔥 🛠️ الدوال الجديدة المضافة للتحقق الذكي والمنع من التكرار 🛠️ 🔥
+    // 🔥 🛠️ الدوال الخاصة بالتحقق الذكي والمنع من التكرار 🛠️ 🔥
     // =========================================================================
 
     // 🔍 أ: التأكد هل الرمز الإحصائي موجود مسبقاً في قاعدة البيانات بالكامل (عند الإضافة الجديدة)
