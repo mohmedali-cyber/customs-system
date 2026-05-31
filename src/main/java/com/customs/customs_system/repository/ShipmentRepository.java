@@ -36,8 +36,8 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
 
     // ✅ تم تصحيح المسار هنا ليتوافق مع مشروعك الحالي
     @Query("SELECT s FROM Shipment s WHERE s.status IN " +
-           "(com.example.customs_systemm.entity.ShipmentStatus.APPROVED, " +
-           "com.example.customs_systemm.entity.ShipmentStatus.COMPLETED)")
+           "(com.example.customs_system.entity.ShipmentStatus.APPROVED, " +
+           "com.example.customs_system.entity.ShipmentStatus.COMPLETED)")
     Page<Shipment> findArchivedBasic(Pageable pageable);
 
     @Modifying
@@ -48,8 +48,8 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
 
     // ✅ تم تصحيح المسار هنا أيضاً ليتوافق مع مشروعك المحلي
     @Query("SELECT COUNT(s) FROM Shipment s WHERE s.status IN " +
-           "(com.example.customs_systemm.entity.ShipmentStatus.APPROVED, " +
-           "com.example.customs_systemm.entity.ShipmentStatus.COMPLETED)")
+           "(com.example.customs_system.entity.ShipmentStatus.APPROVED, " +
+           "com.example.customs_system.entity.ShipmentStatus.COMPLETED)")
     long countArchived();
 
     @Query("SELECT COUNT(s) FROM Shipment s")
