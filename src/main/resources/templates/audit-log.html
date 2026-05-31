@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>سجل المراقبة والتدقيق - منظومة الأرشيف</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: rgb(0, 0, 160);
+            --primary2: rgb(64, 128, 128);
+            --primary3: rgb(0, 0, 0);
+            --bg-body: rgb(255, 255, 255);
+            --text-main: rgb(0, 255, 64);
+            --white: rgb(192, 192, 192);
+            --shadow-md: 0 10px 25px -5px rgb(255, 197, 138);
+            --radius: 16px;
+            
+            /* ألوان الحالات للمراقبة */
+            --action-add: #3b82f6;     /* أزرق للإضافة */
+            --action-approve: #059669; /* أخضر للقبول */
+            --action-reject: #dc2626;  /* أحمر للرفض */
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-body);
+            background-image: radial-gradient(at 0% 0%, rgb(0, 0, 0) 0px, transparent 50%), 
+                              radial-gradient(at 100% 100%, rgb(0, 0, 0) 0px, transparent 50%);
+            margin: 0; padding: 40px; color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        /* زر الرجوع الفخم */
+        .back-fab {
+            position: fixed; bottom: 40px; left: 40px;
+            background: var(--white); color: var(--primary);
+            width: 60px; height: 60px; border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--shadow-md); transition: 0.4s;
+            z-index: 1000; border: 1px solid rgba(255,255,255,0.8); cursor: pointer;
+        }
+        .back-fab:hover { transform: translateY(-5px); background: var(--primary); color: white; }
+
+        .header-main { 
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 40px; background: rgb(45, 45, 45);
+            padding: 25px 40px; border-radius: var(--radius); box-shadow: var(--shadow-md);
+            border: 1px solid rgb(0, 255, 64); position: relative;
+        }
+
+        .workspace {
+            background: var(--white); border-radius: var(--radius);
+            padding: 40px; box-shadow: var(--shadow-md);
+            border: 2px solid rgb(0, 0, 64); min-height: 500px;
+        }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0 15px; }
+        
+        .custom-thead {
+            background: linear-gradient(135deg, rgb(45, 45, 45) 0%, rgb(15, 15, 15) 100%);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .custom-thead th {
+            color: #ffffff; font-weight: 700; font-size: 1.1rem;
+            padding: 15px 20px; text-align: center; border-bottom: 2px solid rgb(128, 128, 128);
+        }
+
+        td { padding: 20px; text-align: center; background: rgb(255, 255, 255); border-top: 1px solid rgb(0, 0, 0); border-bottom: 1px solid rgb(0, 0, 0); }
+        tr td:first-child { border-right: 1px solid rgb(221, 111, 0); border-radius: 0 18px 18px 0; }
+        tr td:last-child { border-left: 1px solid rgb(210, 105, 0); border-radius: 18px 0 0 18px; }
+
+        /* شارات المراقبة الملونة ذكياً */
+        .badge-user {
+            background: #1f2937; color: #ffffff; padding: 4px 12px; border-radius: 8px; font-weight: 700; font-size: 0.85rem;
+        }
+        
+        .badge-action {
+            padding: 6px 14px; border-radius: 8px; font-weight: 900; font-size: 0.85rem; color: #fff;
+        }
+        .action-created { background: var(--action-add); }
+        .action-approved { background: var(--action-approve); }
+        .action-rejected { background: var(--action-reject); }
+
+        .time-txt { font-weight: 700; color: var(--primary3); direction: ltr; display: inline-block; }
+    </style>
+</head>
+<body>
+
+<button onclick="window.location.href='/shipments'" class="back-fab" title="الرجوع لإدارة الشحنات">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+    </svg>
+</button>
+
+<div class="header-main">
+    <div style="width: 100%; text-align: center;">
+        <h2 style="margin: 0; font-weight: 900; color: rgb(255, 255, 255);"> سجل العمليات</h2>
+        <p style="margin: 5px 0 0 0; color: var(--primary2); font-size: 0.95rem;"></p>
+    </div>
+</div>
+
+<div class="workspace">
+    <div th:if="${not #lists.isEmpty(auditLogs)}">
+        <table>
+            <thead class="custom-thead">
+                <tr>
+                    <th>رقم الحاوية</th>
+                    <th>الرمز الإحصائي</th> <th>المسؤول عن الإجراء</th>
+                    <th>نوع العملية</th>
+                    <th>التاريخ والتوقيت</th>
+                    <th>ملاحظات وتفاصيل</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="log : ${auditLogs}">
+                    <td><strong th:text="${log.containerNumber}" style="color: var(--primary3); font-size: 1.1rem;"></strong></td>
+                    
+                    <td>
+                        <span class="stat-badge" th:text="${log.statisticalCode != null ? log.statisticalCode : '---'}" 
+                              style="background: #000000; color: #ffa953; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; border: 1px solid #ffa953;">
+                            68554
+                        </span>
+                    </td>
+                    
+                    <td>
+                        <span class="badge-user" th:text="${log.performedBy}">الأدمن</span>
+                    </td>
+                    
+                    <td>
+                        <span class="badge-action" 
+                              th:classappend="${log.actionType == 'إضافة شحنة' ? 'action-created' : (log.actionType == 'اعتماد وقبول' ? 'action-approved' : 'action-rejected')}"
+                              th:text="${log.actionType}">
+                        </span>
+                    </td>
+                    
+                    <td>
+                        <span class="time-txt" th:text="${#temporals.format(log.actionDate, 'yyyy-MM-dd | HH:mm:ss')}">2026-05-23 | 14:18:02</span>
+                    </td>
+                    
+                    <td th:text="${log.details}" style="color: #475569; font-weight: 600; font-size: 0.95rem;">
+                        تم إدخال الشحنة بنجاح عبر المنافذ الجمركية.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:if="${#lists.isEmpty(auditLogs)}" style="text-align: center; padding: 100px 0;">
+        <h3 style="color: var(--primary3);">لا توجد عمليات مسجلة في النظام حتى الآن</h3>
+    </div>
+</div>
+
+</body>
+</html>

@@ -34,8 +34,10 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
                                   @Param("status") ShipmentStatus status, 
                                   Pageable pageable);
 
-    // 🌟 تم التعديل هنا: استخدام اسم الـ Enum مباشرةً والاعتماد على الـ Import الأساسي
-    @Query("SELECT s FROM Shipment s WHERE s.status IN (ShipmentStatus.APPROVED, ShipmentStatus.COMPLETED)")
+    // ✅ تم تصحيح المسار هنا ليتوافق مع مشروعك الحالي
+    @Query("SELECT s FROM Shipment s WHERE s.status IN " +
+           "(com.example.customs_systemm.entity.ShipmentStatus.APPROVED, " +
+           "com.example.customs_systemm.entity.ShipmentStatus.COMPLETED)")
     Page<Shipment> findArchivedBasic(Pageable pageable);
 
     @Modifying
@@ -44,8 +46,10 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
 
     long countByStatus(ShipmentStatus status);
 
-    // 🌟 تم التعديل هنا أيضاً: تنظيف الاستعلام من الباكيج القديم الخاطئ
-    @Query("SELECT COUNT(s) FROM Shipment s WHERE s.status IN (ShipmentStatus.APPROVED, ShipmentStatus.COMPLETED)")
+    // ✅ تم تصحيح المسار هنا أيضاً ليتوافق مع مشروعك المحلي
+    @Query("SELECT COUNT(s) FROM Shipment s WHERE s.status IN " +
+           "(com.example.customs_systemm.entity.ShipmentStatus.APPROVED, " +
+           "com.example.customs_systemm.entity.ShipmentStatus.COMPLETED)")
     long countArchived();
 
     @Query("SELECT COUNT(s) FROM Shipment s")
@@ -72,10 +76,20 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
     @Query("SELECT s FROM Shipment s WHERE " +
            "LOWER(s.containerNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(s.customsbroker) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(s.statisticalCode) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+           "LOWER(s.statisticalCode) LIKE LOWER(CONCAT('%', :keyword, '%'))") // 🛠️ تم إزالة القوس الثالث الزائد هنا
     List<Shipment> searchByKeyword(@Param("keyword") String keyword);
 
     // 🌟 التعديل المعتمد: إضافة LEFT JOIN FETCH لضمان جلب الصور مع الشحنة أثناء البحث
     @Query("SELECT s FROM Shipment s LEFT JOIN FETCH s.documents WHERE s.containerNumber = :q OR s.statisticalCode = :q")
     Optional<Shipment> findAllByAnyId(@Param("q") String q);
+
+    // =========================================================================
+    // 🔥 🛠️ الدوال الجديدة المضافة للتحقق الذكي والمنع من التكرار 🛠️ 🔥
+    // =========================================================================
+
+    // 🔍 أ: التأكد هل الرمز الإحصائي موجود مسبقاً في قاعدة البيانات بالكامل (عند الإضافة الجديدة)
+    boolean existsByStatisticalCode(String statisticalCode);
+
+    // 🔍 ب: التأكد هل الرمز موجود لشحنة أخرى غير الحالية (عند التعديل عشان ما يضربش في روحه)
+    boolean existsByStatisticalCodeAndIdNot(String statisticalCode, Long id);
 }

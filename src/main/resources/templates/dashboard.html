@@ -199,12 +199,28 @@ body {
         <p style="color: #64748b;">تحديث الصور والمستندات</p>
     </a>
 
-    <a href="/shipments/archive" class="card fade-in" style="animation-delay: 0.2s;"
-       sec:authorize="hasAnyRole('ADMIN', 'EDITOR', 'STAFF')">
-        <h3 style="color: #475569;">إجمالي الأرشيف المعتمد</h3>
-        <div class="count approved" th:text="${approvedCount}">9</div>
-        <p style="color: #64748b;">سجلات الأرشفة الإلكترونية</p>
-    </a>
+<a href="/shipments/audit-log" class="card fade-in" style="animation-delay: 0.2s;"
+   sec:authorize="hasAnyRole('ADMIN')">
+    <h3 style="color: #475569;">سجل عمليات المستخدمين</h3>
+    
+    <style>
+        @keyframes miniPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); } /* تكبير خفيف ومحترف داخل الدائرة */
+            100% { transform: scale(1); }
+        }
+        .animated-mini-img {
+            animation: miniPulse 5s infinite ease-in-out;
+        }
+    </style>
+
+    <div class="count approved" style="width: 100px; height: 60px; margin: 15px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 0; border-radius: 50%;">
+        <img th:src="@{/images/StaffingServ.jpg}" class="animated-mini-img" alt="Staffing Service" 
+             style="width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;" />
+    </div>
+    
+    <p style="color: #64748b;">الأعتماد والرفض</p>
+</a>
 
     <a href="/shipments/edit-list" class="card fade-in" style="animation-delay: 0.15s;"
        sec:authorize="hasAnyRole('ADMIN', 'EDITOR', 'STAFF')">
@@ -212,6 +228,10 @@ body {
         <h3 style="font-weight: 800; color: #1e3a8a;">تعديل الشحنات</h3>
         <p style="color: #64748b;">تحديث البيانات والمرفقات</p>
     </a>
+
+
+
+
 
 </div>
 <!--

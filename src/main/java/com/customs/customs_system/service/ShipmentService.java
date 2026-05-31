@@ -317,4 +317,23 @@ public class ShipmentService {
         return shipmentRepository.findAllByAnyId(query.trim()).orElse(null);
     }
 
+    
+    
+    
+    
+ // 🔍 1. فحص الرمز الإحصائي قبل إدخال أي شحنة جديدة
+    public boolean isStatisticalCodeExists(String statisticalCode) {
+        if (statisticalCode == null || statisticalCode.trim().isEmpty()) {
+            return false;
+        }
+        return shipmentRepository.existsByStatisticalCode(statisticalCode.trim());
+    }
+
+    // 🔍 2. فحص الرمز الإحصائي عند التعديل لشحنة أخرى
+    public boolean isStatisticalCodeExistsForOther(String statisticalCode, Long currentId) {
+        if (statisticalCode == null || statisticalCode.trim().isEmpty()) {
+            return false;
+        }
+        return shipmentRepository.existsByStatisticalCodeAndIdNot(statisticalCode.trim(), currentId);
+    }
 }
