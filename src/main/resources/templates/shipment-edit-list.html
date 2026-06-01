@@ -187,13 +187,22 @@
 <div class="main-container">
     <h2 class="title-messiri" id="mainTitle">البحث الرقمي في الأرشيف</h2>
 
+   <!-- 🔓 صندوق البحث الرقمي والأمان الجمركي المركب -->
     <div class="search-box" id="centralSearchBox">
-        <label style="font-weight: bold; color: var(--dark); font-size: 16px;">🔍 أدخل رقم الحاوية أو الرمز الإحصائي لتعديل بيانات ومرفقات الشحنة:</label>
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <input type="text" id="searchInput" placeholder="أدخل رقم البحث هنا..." style="flex: 1; font-size: 15px;">
-            <button type="button" id="searchSubmitBtn" onclick="searchAndFill()" style="width: 140px; background: var(--dark); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight:bold; font-family:'Cairo'; font-size: 15px; transition: 0.2s;">بحث في النظام</button>
+        <label style="font-weight: bold; color: var(--dark); font-size: 16px; display: block; margin-bottom: 12px;">🔍 بوابة الولوج وتعديل الشحنات المرفوضة (ادخل المفاتيح السرية للشحنة):</label>
+        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+            
+            <div style="flex: 1; min-width: 200px;">
+                <input type="number" id="loginIdInput" placeholder="أدخل رقم الدخول الجمركي (ID)..." style="width: 100%; padding: 12px; border: 1px solid #cfd8ff; border-radius: 8px; box-sizing: border-box; font-family: monospace; font-size: 15px;">
+            </div>
+            
+            <div style="flex: 1; min-width: 200px;">
+                <input type="text" id="vCodeInput" placeholder="أدخل رمز التحقق السري (Verification Code)..." style="width: 100%; padding: 12px; border: 1px solid #cfd8ff; border-radius: 8px; box-sizing: border-box; font-family: monospace; font-size: 15px; letter-spacing: 1px;">
+            </div>
+            
+            <button type="button" id="searchSubmitBtn" onclick="searchAndFill()" style="width: 160px; height: 48px; background: var(--dark); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight:bold; font-family:'Cairo'; font-size: 15px; transition: 0.2s;">🔓 جلب الشحنة</button>
         </div>
-        <small id="searchMessage" style="display: block; margin-top: 12px; font-weight: bold; font-size: 14px;"></small>
+        <small id="searchMessage" style="display: block; margin-top: 15px; font-weight: bold; font-size: 14px;"></small>
     </div>
 
 <button onclick="smartBack()" class="back-fab" title="الرجوع للرئيسية">
@@ -311,9 +320,31 @@ window.addEventListener('load', () => {
         `);
     });
 
-    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+    // 🔥 حقول الدخول والأمان الجمركي:
+    document.getElementById('loginIdInput').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); searchAndFill(); }
     });
+    document.getElementById('vCodeInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); searchAndFill(); }
+    });
+
+    // 🟢 قراءة مفاتيح الأمان من الرابط وتمريرها تلقائياً عند التحويل من بوابة الدخول:
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLoginId = urlParams.get('loginId');
+    const urlVCode = urlParams.get('vCode');
+
+    if (urlLoginId && urlVCode) {
+        const loginInput = document.getElementById('loginIdInput');
+        const vCodeInput = document.getElementById('vCodeInput');
+        
+        if (loginInput && vCodeInput) {
+            loginInput.value = urlLoginId;
+            vCodeInput.value = urlVCode;
+            
+            // استدعاء دالة الجلب فوراً لتظهر بيانات الشحنة ومستنداتها تلقائياً
+            searchAndFill();
+        }
+    }
 });
 
 function toggleViewer(type) {
@@ -321,74 +352,103 @@ function toggleViewer(type) {
     viewer.style.display = (viewer.style.display === "block") ? "none" : "block";
 }
 
+/* =======================================================
+   🔓 دالة التحقق المركب وجلب الشحنة للتعديل عبر المسار الآمن
+======================================================= */
 function searchAndFill() {
-    const query = document.getElementById('searchInput').value.trim();
+    const loginId = document.getElementById('loginIdInput').value.trim();
+    const vCode = document.getElementById('vCodeInput').value.trim();
     const msg = document.getElementById('searchMessage');
     const searchBtn = document.getElementById('searchSubmitBtn');
     
-    if(!query) return;
+    if (!loginId || !vCode) {
+        msg.style.color = "var(--danger)";
+        msg.textContent = "⚠️ عذراً، يرجى إدخال رقم الدخول الجمركي ورمز التحقق السري معاً!";
+        return;
+    }
 
     msg.style.color = "blue"; 
-    msg.textContent = "⏳ جاري الفحص وجلب الشحنة من قاعدة البيانات...";
+    msg.textContent = "⏳ جاري فحص مفاتيح الأمان وجلب الشحنة من قاعدة البيانات...";
     searchBtn.disabled = true;
 
-    fetch(`/shipments/api/search?q=${query}`)
-        .then(res => res.json())
-        .then(data => {
-            searchBtn.disabled = false;
-            
-            // تعبئة عناصر المدخلات بالبيانات المسترجعة
-            // تعبئة عناصر المدخلات بالبيانات المسترجعة بالكامل
-document.getElementById('currentId').value = data.id;
-document.getElementById('brokerInput').value = data.customsbroker || '';
-document.getElementById('phoneInput').value = data.brokerPhone || '';
-document.getElementById('containerInput').value = data.containerNumber || ''; 
-document.getElementById('statCodeInput').value = data.statisticalCode || '';
-document.getElementById('brokerNationalIdInput').value = data.brokerNationalId || '';
-document.getElementById('entityNameInput').value = data.entityName || '';
-         
-         
-            // إظهار الفورم بالكامل فور العثور بنجاح وحذف أي تلميح للجمود
-            document.getElementById('mainForm').style.display = "block";
-            
-            msg.style.color = "green"; 
-            msg.textContent = "✅ تم العثور على الشحنة وتحميل ملفاتها الرقمية بنجاح.";
-            
-            existingArchiveDocs = [];
-            
-            if (data.documents && Array.isArray(data.documents)) {
-                data.documents.forEach(doc => {
-                    let typeId = doc.type;
-                    
-                    if (typeId === 'BILL_OF_LADING') typeId = 'BOL';
-                    else if (typeId === 'DELIVERY_ORDER') typeId = 'DO';
-                    else if (typeId === 'CERTIFICATE_OF_ORIGIN') typeId = 'OC';
-                    else if (typeId === 'INVOICE') typeId = 'INV';
-                    else if (typeId === 'PACKING_LIST') typeId = 'PL';
-                    else if (typeId === 'AUTHORIZATION_LETTER') typeId = 'AL';
-                    else if (typeId === 'CUSTOMS_DECLARATION') typeId = 'CD';
-                    else if (typeId === 'BROKER_ID') typeId = 'BI';
-                    else if (typeId === 'STATISTICAL_CODE' || typeId === 'STATISTICAL_IMAGE') typeId = 'SI';
+    const params = new URLSearchParams();
+    params.append('loginId', loginId);
+    params.append('vCode', vCode);
 
-                    if (doc.fileUrl) {
-                        existingArchiveDocs.push({ id: doc.id, type: typeId, fileUrl: doc.fileUrl });
-                    }
-                });
-            }
-            
-            refreshAllGrids();
-            showPage(1);
-        })
-        .catch(err => {
-            console.error(err);
-            searchBtn.disabled = false;
-            msg.style.color = "red"; 
-            msg.textContent = "❌ لم يتم العثور على أي نتائج مطابقة لهذا الرقم بالأرشيف.";
-            // إخفاء الاستمارة مجدداً في حال فشل البحث أو كتابة رقم خاطئ بعد بحث ناجح
-            document.getElementById('mainForm').style.display = "none";
-        });
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+    const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+    if (csrfHeader && csrfToken) { headers[csrfHeader] = csrfToken; }
+
+    // إرسال طلب واحد فقط يتكفل بالتحقق والـجلب معاً
+    fetch('/shipments/track-login', {
+        method: 'POST',
+        headers: headers,
+        body: params.toString()
+    })
+    .then(async res => {
+        searchBtn.disabled = false;
+        if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(errorText);
+        }
+        return res.json(); // نتحصل على كائن الشحنة مباشرة هنا
+    })
+    .then(data => {
+        // تعبئة الحقول الأساسية بناءً على الكائن القادم من السيرفر
+        document.getElementById('currentId').value = data.id;
+        document.getElementById('brokerInput').value = data.customsbroker || '';
+        document.getElementById('phoneInput').value = data.brokerPhone || '';
+        document.getElementById('containerInput').value = data.containerNumber || ''; 
+        document.getElementById('statCodeInput').value = data.statisticalCode || '';
+        document.getElementById('brokerNationalIdInput').value = data.brokerNationalId || '';
+        document.getElementById('entityNameInput').value = data.entityName || '';
+     
+        // إظهار الفورم
+        document.getElementById('mainForm').style.display = "block";
+        
+        msg.style.color = "var(--success)"; 
+        msg.textContent = "✅ تم التحقق من الهوية الجمركية بنجاح. تم تحميل الملفات الرقمية جاهزة للتعديل.";
+        
+        existingArchiveDocs = [];
+        
+        if (data.documents && Array.isArray(data.documents)) {
+            data.documents.forEach(doc => {
+                let typeId = doc.type;
+                if (typeId === 'BILL_OF_LADING') typeId = 'BOL';
+                else if (typeId === 'DELIVERY_ORDER') typeId = 'DO';
+                else if (typeId === 'CERTIFICATE_OF_ORIGIN') typeId = 'OC';
+                else if (typeId === 'INVOICE') typeId = 'INV';
+                else if (typeId === 'PACKING_LIST') typeId = 'PL';
+                else if (typeId === 'AUTHORIZATION_LETTER') typeId = 'AL';
+                else if (typeId === 'CUSTOMS_DECLARATION') typeId = 'CD';
+                else if (typeId === 'BROKER_ID') typeId = 'BI';
+                else if (typeId === 'STATISTICAL_CODE' || typeId === 'STATISTICAL_IMAGE') typeId = 'SI';
+
+                if (doc.fileUrl) {
+                    existingArchiveDocs.push({ id: doc.id, type: typeId, fileUrl: doc.fileUrl });
+                }
+            });
+        }
+        
+        refreshAllGrids();
+        showPage(1);
+
+        if (data.rejectionReason) {
+            setTimeout(() => {
+                showCustomAlert("⚠️", "ملاحظة مراجع الجمارك", `هذه الشحنة تم رفضها سابقاً بسبب:\n"${data.rejectionReason}"\n\nيرجى تصحيح النواقص المذكورة وإعادة الحفظ والتأكيد.`);
+            }, 500);
+        }
+    })
+    .catch(err => {
+        searchBtn.disabled = false;
+        console.error(err);
+        msg.style.color = "var(--danger)"; 
+        msg.textContent = err.message || "❌ فشل الاتصال بالخادم الجمركي.";
+        document.getElementById('mainForm').style.display = "none";
+    });
 }
-
 function refreshAllGrids() {
     docTypes.forEach(t => {
         const grid = document.getElementById(`grid-${t.id}`);
@@ -506,16 +566,16 @@ async function submitUpdate() {
     // 2. التحقق من أن الحقول الأساسية ليست فارغة
     if (!brokerName || !nationalId || !phone || !entityName) {
         showCustomAlert("⚠️", "بيانات ناقصة", "يرجى ملء جميع الحقول الأساسية أولاً (المخلص، الرقم الوطني، الهاتف، واسم الجهة) قبل الحفظ.");
-        return; // إيقاف تنفيذ الدالة وعدم إرسال أي شيء للسيرفر
+        return;
     }
 
     // 3. التحقق من طول الرقم الوطني (يجب أن يكون 12 رقماً بالضبط)
     if (nationalId.length !== 12) {
         showCustomAlert("⚠️", "تحقق من البيانات", "يجب أن يتكون الرقم الوطني للمخلص من 12 رقماً تماماً.");
-        return; // إيقاف تنفيذ الدالة
+        return;
     }
 
-    // 4. إذا كانت البيانات سليمة.. يبدأ كود الحفظ والمزامنة الأصلي الخاص بك:
+    // 4. إذا كانت البيانات سليمة.. يبدأ كود الحفظ والمزامنة
     const btn = document.getElementById('finalSaveBtn');
     const id = document.getElementById('currentId').value;
     
@@ -524,9 +584,17 @@ async function submitUpdate() {
     
     const formData = new FormData(document.getElementById('mainForm'));
     
+    // إضافة الـ CSRF لـ طلب التحديث النهائي احتياطياً لحمايته
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+    
+    const updateHeaders = {};
+    if (csrfHeader && csrfToken) { updateHeaders[csrfHeader] = csrfToken; }
+
     try {
         const res = await fetch(`/shipments/update/${id}`, {
             method: 'POST',
+            headers: updateHeaders,
             body: formData
         });
         if(res.ok) {
@@ -596,8 +664,17 @@ function removeArchiveFile(docId, docTitle) {
         confirmYesBtn.disabled = true;
         confirmYesBtn.textContent = "⏳ جاري الحذف...";
 
+        // تجهيز التوكن لعملية الحذف الآمن للمستند الفردي
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+        
+        const deleteHeaders = {};
+        if (csrfHeader && csrfToken) { deleteHeaders[csrfHeader] = csrfToken; }
+
+        // 🟢 تصحيح مسار الحذف ليدعم السيرفر بشكل كامل
         fetch(`/shipments/api/documents/${docId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: deleteHeaders
         })
         .then(res => res.json())
         .then(result => {

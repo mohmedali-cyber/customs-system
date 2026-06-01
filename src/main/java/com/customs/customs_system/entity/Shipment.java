@@ -11,108 +11,131 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @Entity
 public class Shipment {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	 @Id
+	    @GeneratedValue(strategy = GenerationType.IDENTITY)
+	    private Long id;
 
-    private String containerNumber;   // رقم الحاوية
-    private String customsbroker;     // اسم المخلص
-    private String brokerPhone;       // رقم هاتف المخلص
-    private String statisticalCode;   // الرمز الإحصائي
+	    private String containerNumber;   // رقم الحاوية
+	    private String customsbroker;     // اسم المخلص
+	    private String brokerPhone;       // رقم هاتف المخلص
+	    private String statisticalCode;   // الرمز الإحصائي
 
-    
-    @Column(name = "entity_name")
-    private String entityName; // اسم الجهة
+	    
+	    @Column(name = "entity_name")
+	    private String entityName; // اسم الجهة
 
-    @Column(name = "broker_national_id", length = 12) // الرقم الوطني الليبي عادة 12 رقماً
-    private String brokerNationalId; // الرقم الوطني للمخلص
-    
-    @Column(name = "rejection_reason", length = 1000)
-    private String rejectionReason;   // حقل لتخزين سبب الرفض
+	    @Column(name = "broker_national_id", length = 12) // الرقم الوطني الليبي عادة 12 رقماً
+	    private String brokerNationalId; // الرقم الوطني للمخلص
+	    
+	    @Column(name = "rejection_reason", length = 1000)
+	    private String rejectionReason;   // حقل لتخزين سبب الرفض
 
-    
-    // حقل لتخزين سبب الرفض
-    
-    @Enumerated(EnumType.STRING)
-    private ShipmentStatus status;
+	    
+	    // حقل لتخزين سبب الرفض
+	    
+	    @Enumerated(EnumType.STRING)
+	    private ShipmentStatus status;
 
-    // ✅ تاريخ الإدخال: يُمنع تحديثه بعد أول مرة (updatable = false)
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+	    // ✅ تاريخ الإدخال: يُمنع تحديثه بعد أول مرة (updatable = false)
+	    @Column(name = "created_at", updatable = false)
+	    private LocalDateTime createdAt;
 
-    // ✅ تاريخ الاعتماد: يتم تسجيله فقط عند الضغط على "اعتماد"
-    @Column(name = "approved_at")
-    private LocalDateTime approvedAt;
+	    // ✅ تاريخ الاعتماد: يتم تسجيله فقط عند الضغط على "اعتماد"
+	    @Column(name = "approved_at")
+	    private LocalDateTime approvedAt;
 
-    @OneToMany(
-            mappedBy = "shipment",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
-        )
-    @JsonManagedReference
-    private List<Document> documents;
+	    @OneToMany(
+	            mappedBy = "shipment",
+	            cascade = CascadeType.ALL,
+	            orphanRemoval = true,
+	            fetch = FetchType.LAZY
+	        )
+	    @JsonManagedReference
+	    private List<Document> documents;
 
-    @PrePersist
-    public void prePersist() {
-        if (this.createdAt == null) {
-            this.createdAt = LocalDateTime.now();
-        }
-        if (this.status == null) {
-            this.status = ShipmentStatus.PENDING;
-        }
-    }
+	    @PrePersist
+	    public void prePersist() {
+	        if (this.createdAt == null) {
+	            this.createdAt = LocalDateTime.now();
+	        }
+	        if (this.status == null) {
+	            this.status = ShipmentStatus.PENDING;
+	        }
+	    }
 
-    // ==========================================
-    // Getters & Setters (تمت إضافة حقل الاعتماد)
-    // ==========================================
+	 // رمز التحقق السري العشوائي الذي سيولده السيستم (أرقام لا تتكرر)
+	    @Column(name = "verification_code", unique = true, length = 10)
+	    private String verificationCode;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+	    // حقل اختياري لو تبي تقفل الدخول برمجياً بشكل صريح (أو نعتمدوا على الحالة APPROVED مباشرة)
+	 // ابحث عن المتغير القديم واستبدله بهذا:
+	    @Column(name = "is_locked")
+	    private Boolean isLocked = false; // حوّلناه إلى Boolean بحرف كبيير وعطيناه قيمة افتراضية
+	    
 
-    public String getContainerNumber() { return containerNumber; }
-    public void setContainerNumber(String containerNumber) { this.containerNumber = containerNumber; }
+	    public Long getId() { return id; }
+	    public void setId(Long id) { this.id = id; }
 
-    public String getCustomsbroker() { return customsbroker; }
-    public void setCustomsbroker(String customsbroker) { this.customsbroker = customsbroker; }
+	    public String getContainerNumber() { return containerNumber; }
+	    public void setContainerNumber(String containerNumber) { this.containerNumber = containerNumber; }
 
-    public String getBrokerPhone() { return brokerPhone; }
-    public void setBrokerPhone(String brokerPhone) { this.brokerPhone = brokerPhone; }
+	    public String getCustomsbroker() { return customsbroker; }
+	    public void setCustomsbroker(String customsbroker) { this.customsbroker = customsbroker; }
 
-    public String getStatisticalCode() { return statisticalCode; }
-    public void setStatisticalCode(String statisticalCode) { this.statisticalCode = statisticalCode; }
+	    public String getBrokerPhone() { return brokerPhone; }
+	    public void setBrokerPhone(String brokerPhone) { this.brokerPhone = brokerPhone; }
 
-    public ShipmentStatus getStatus() { return status; }
-    public void setStatus(ShipmentStatus status) { this.status = status; }
+	    public String getStatisticalCode() { return statisticalCode; }
+	    public void setStatisticalCode(String statisticalCode) { this.statisticalCode = statisticalCode; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+	    public ShipmentStatus getStatus() { return status; }
+	    public void setStatus(ShipmentStatus status) { this.status = status; }
 
-    public LocalDateTime getApprovedAt() { return approvedAt; }
-    public void setApprovedAt(LocalDateTime approvedAt) { this.approvedAt = approvedAt; }
+	    public LocalDateTime getCreatedAt() { return createdAt; }
+	    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public List<Document> getDocuments() { return documents; }
-    public void setDocuments(List<Document> documents) { this.documents = documents; }
+	    public LocalDateTime getApprovedAt() { return approvedAt; }
+	    public void setApprovedAt(LocalDateTime approvedAt) { this.approvedAt = approvedAt; }
 
-
- // مع إضافة الـ Getter و Setter له
-    public String getRejectionReason() { return rejectionReason; }
-    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+	    public List<Document> getDocuments() { return documents; }
+	    public void setDocuments(List<Document> documents) { this.documents = documents; }
 
 
-    
-    
-    public String getEntityName() {
-        return entityName;
-    }
-    public void setEntityName(String entityName) {
-        this.entityName = entityName;
-    }
+	 // مع إضافة الـ Getter و Setter له
+	    public String getRejectionReason() { return rejectionReason; }
+	    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
 
-    public String getBrokerNationalId() {
-        return brokerNationalId;
-    }
-    public void setBrokerNationalId(String brokerNationalId) {
-        this.brokerNationalId = brokerNationalId;
-    }
-}
+
+	    
+	    
+	    public String getEntityName() {
+	        return entityName;
+	    }
+	    public void setEntityName(String entityName) {
+	        this.entityName = entityName;
+	    }
+
+	    public String getBrokerNationalId() {
+	        return brokerNationalId;
+	    }
+	    public void setBrokerNationalId(String brokerNationalId) {
+	        this.brokerNationalId = brokerNationalId;
+	    }
+		
+	    
+	    
+	    
+	    public String getVerificationCode() {
+			return verificationCode;
+		}
+		public void setVerificationCode(String verificationCode) {
+			this.verificationCode = verificationCode;
+		}
+		public Boolean getIsLocked() {
+		    return isLocked;
+		}
+		public void setIsLocked(Boolean isLocked) {
+		    this.isLocked = isLocked;
+		}
+
+	}

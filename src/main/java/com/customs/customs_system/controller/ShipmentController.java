@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,10 +13,13 @@ import org.springframework.web.multipart.MultipartFile;
 import com.customs.customs_system.entity.*;
 import com.customs.customs_system.service.AuditLogService;
 import com.customs.customs_system.service.ShipmentService;
+
 import com.customs.customs_system.repository.ShipmentRepository;
 import com.customs.customs_system.repository.UserRepository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @Controller
@@ -24,23 +28,56 @@ public class ShipmentController {
 
 	 private final ShipmentService shipmentService;
 	    private final UserRepository userRepository; 
+	    private final AuditLogService auditLogService;
 
 	    @Autowired
 	    private ShipmentRepository shipmentRepository;
 	    
-	    private final AuditLogService auditLogService;
-	    
-	    public ShipmentController(ShipmentService shipmentService, UserRepository userRepository,AuditLogService auditLogService) {
+	    public ShipmentController(ShipmentService shipmentService, UserRepository userRepository, AuditLogService auditLogService) {
 	        this.shipmentService = shipmentService;
 	        this.userRepository = userRepository;
 	        this.auditLogService = auditLogService;
 	    }
-	    
-	    // ... باقي الـ ميثودز والـ GetMapping الخاصة بك تحت ...
 
+	    // =======================================================
+	    // 🚪 0. البوابة الجمركية لولوج المشغلين (التعديل أو الإضافة)
+	    // =======================================================
+	    
+	    // عرض واجهة الدخول النظيفة (التي تطلب رقم التسجيل والرمز السري)
+	    @GetMapping("/gate")
+	    public String showGateLogin() {
+	        return "login-gate"; 
+	    }
+
+	    // التحقق الآمن لطلب الـ Fetch من واجهة البوابة وتحويله تلقائياً
+	    @PostMapping("/track-login")
+	    @ResponseBody
+	    public ResponseEntity<?> trackLoginAndFetch(@RequestParam("loginId") String loginId, 
+	                                                @RequestParam("vCode") String vCode) {
+	        try {
+	            long id = Long.parseLong(loginId.trim());
+	            Shipment shipment = shipmentRepository.findById(id).orElse(null);
+	            
+	            if (shipment != null && vCode.trim().equals(shipment.getVerificationCode())) {
+	                if (shipment.getStatus() == ShipmentStatus.APPROVED) {
+	                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	                            .body("⚠️ عذراً، هذه الشحنة تم اعتمادها ونقلها للأرشيف النهائي ولا يمكن تعديل مستنداتها.");
+	                }
+	                
+	                // 🟢 هنا السر: نرجع كائن الشحنة كاملاً فوراً في نفس الطلب الناجح!
+	                return ResponseEntity.ok().body(shipment);
+	            }
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	                    .body("⚠️ عذراً، رقم التسجيل الجمركي أو رمز التحقق السري غير صحيح.");
+	        } catch (NumberFormatException e) {
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("⚠️ صيغة رقم التسجيل غير صالحة.");
+	        } catch (Exception e) {
+	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("❌ حدث خطأ في الخادم الجمركي.");
+	        }
+	    }
 
 	    // ==========================================
-	    // 📥 1. العرض الأساسي مع التقسيم (9 سجلات)
+	    // 📥 1. العرض الأساسي مع التقسيم (7 سجلات) للموظفين
 	    // ==========================================
 	    @GetMapping("")
 	    public String getShipments(
@@ -81,14 +118,6 @@ public class ShipmentController {
 	        }
 	    }
 
-	    
-	    
-	    
-	    
-	    
-	    
-	    
-	    
 	    @GetMapping("/fragment")
 	    public String getShipmentsFragment(
 	            @RequestParam(name = "status", required = false, defaultValue = "PENDING") String status,
@@ -114,20 +143,12 @@ public class ShipmentController {
 	            model.addAttribute("totalPages", shipmentPage.getTotalPages());
 	            model.addAttribute("currentStatus", status.toUpperCase());
 
-	            // 🔥 أهم سطر
 	            return "shipment-list :: tableFragment";
 
 	        } catch (IllegalArgumentException e) {
 	            return "shipment-list :: tableFragment";
 	        }
 	    }
-	    
-	    
-	    
-	    
-	    
-	    
-	    
 	    
 	    // ==========================================
 	    // 🛡️ إعادة توجيه الروابط القديمة
@@ -143,149 +164,95 @@ public class ShipmentController {
 	    }
 
 	    // ==========================================
-	    // 📄 2. إضافة شحنة جديدة
+	    // 📄 2. إضافة شحنة جديدة (صفحة التسجيل الجديد للمشغل)
 	    // ==========================================
 	    @GetMapping("/new")
 	    public String showForm(Model model) {
 	        model.addAttribute("shipment", new Shipment());
-	        return "shipment-form";
+	        return "shipment-form"; // صفحة الإضافة الخاصة بك
 	    }
 
 	    // ==========================================
-	    // 🚀 3. حفظ الشحنة
+	    // 🚀 3. حفظ الشحنة الجديدة كلياً
 	    // ==========================================
 	    @PostMapping("/save")
 	    @ResponseBody
-	    public Shipment saveShipment(@ModelAttribute Shipment shipment,
-	                                 @RequestParam(value="BOL_files", required=false) MultipartFile[] bolFiles,
-	                                 @RequestParam(value="DO_files", required=false) MultipartFile[] doFiles,
-	                                 @RequestParam(value="OC_files", required=false) MultipartFile[] ocFiles,
-	                                 @RequestParam(value="INV_files", required=false) MultipartFile[] invFiles,
-	                                 @RequestParam(value="PL_files", required=false) MultipartFile[] plFiles,
-	                                 @RequestParam(value="AL_files", required=false) MultipartFile[] alFiles,
-	                                 @RequestParam(value="CD_files", required=false) MultipartFile[] cdFiles,
-	                                 @RequestParam(value="BI_files", required=false) MultipartFile[] biFiles,
-	                                 @RequestParam(value="SI_files", required=false) MultipartFile[] siFiles) {
+	    public ResponseEntity<?> saveShipment(@ModelAttribute Shipment shipment,
+	                                         @RequestParam(value="BOL_files", required=false) MultipartFile[] bolFiles,
+	                                         @RequestParam(value="DO_files", required=false) MultipartFile[] doFiles,
+	                                         @RequestParam(value="OC_files", required=false) MultipartFile[] ocFiles,
+	                                         @RequestParam(value="INV_files", required=false) MultipartFile[] invFiles,
+	                                         @RequestParam(value="PL_files", required=false) MultipartFile[] plFiles,
+	                                         @RequestParam(value="AL_files", required=false) MultipartFile[] alFiles,
+	                                         @RequestParam(value="CD_files", required=false) MultipartFile[] cdFiles,
+	                                         @RequestParam(value="BI_files", required=false) MultipartFile[] biFiles,
+	                                         @RequestParam(value="SI_files", required=false) MultipartFile[] siFiles) {
 
-	        // 🛑 خطوة الفحص والمنع الذكي: لو الرمز موجود مسبقاً، ارمي خطأ فوراً وقفل العملية
-	        if (shipmentService.isStatisticalCodeExists(shipment.getStatisticalCode())) {
-	            throw new IllegalArgumentException("❌ عذراً، هذا الرمز الإحصائي مسجل مسبقاً !");
+	        // 🛑 1. الفحص المركب الذكي لمنع التكرار البشري الخطأ:
+	        if (shipmentService.isShipmentDuplicate(shipment.getStatisticalCode(), shipment.getContainerNumber())) {
+	            return ResponseEntity.badRequest().body("❌ خطأ: هذه الحاوية مسجلة بالفعل مسبقاً تحت نفس الرمز الإحصائي لهذه الجهة!");
 	        }
 
-	        // 🟢 لو الرمز سليم ومش مكرر، يكمل الكود القديم بتاعك طبيعي جداً بدون أي تغيير:
+	        // 🟢 2. حفظ الشحنة وتوليد المفاتيح السرية داخل الـ Service:
 	        Shipment saved = shipmentService.createShipment(shipment);
+	        
+	        // 🚀 3. انطلاق معالجة الملفات في الخلفية:
 	        shipmentService.processDocumentsAsync(
 	                saved.getId(), bolFiles, doFiles, ocFiles, invFiles, 
 	                plFiles, alFiles, cdFiles, biFiles, siFiles
 	        );
-	        return saved;
+
+	        // 🎁 4. الرد السحري: نرجعوا خريطة (Map) فيها المفاتيح الجديدة للواجهة لتظهر البطاقة الخضراء
+	        Map<String, Object> response = new HashMap<>();
+	        response.put("success", true);
+	        response.put("message", "🎉 تم حفظ الشحنة بنجاح وأرشفتها مبدئياً!");
+	        response.put("shipmentId", saved.getId()); // رقم الدخول الجمركي
+	        response.put("verificationCode", saved.getVerificationCode()); // الرمز السري
+
+	        return ResponseEntity.ok(response);
 	    }
-
+	    
 	    // ==========================================
-	    // ✅ 4. اعتماد الشحنة
-	    // ==========================================
-
-//	    @GetMapping("/approve/{id}")
-//	    public String approve(@PathVariable Long id) {
-//	        // جلب الشحنة قبل الاعتماد لأخذ رقم الحاوية واسم المخلص للسجل
-//	        Shipment shipment = shipmentService.getShipmentById(id);
-//	        
-//	        shipmentService.approveAndArchive(id);
-	//
-//	        // 🟢 السحر هنا: تسجيل عملية الاعتماد والقبول في سجل المراقبة تلقائياً
-//	        try {
-//	            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-//	            String username = (auth != null) ? auth.getName() : "مسؤول نظام";
-//	            
-//	            auditLogService.saveLog(
-//	                shipment.getContainerNumber(), 
-//	                username, 
-//	                "اعتماد وقبول", 
-//	                "تمت الموافقة على مستندات الشحنة ونقلها إلى الأرشيف المعتمد بنجاح."
-//	            );
-//	        } catch (Exception e) {
-//	            e.printStackTrace();
-//	        }
-	//
-//	        return "redirect:/shipments?status=APPROVED";
-//	    }
-	   
-	 // ==========================================
-	    // ✅ 4. اعتماد الشحنة وتسجيل الإجراء
+	    // ✅ 4. اعتماد الشحنة وتسجيل الإجراء للموظف
 	    // ==========================================
 	    @GetMapping("/approve/{id}")
 	    public String approve(@PathVariable Long id) {
-	        // 1. جلب الشحنة أولاً قبل الاعتماد لأخذ البيانات (رقم الحاوية والرمز الإحصائي)
 	        Shipment shipment = shipmentService.getShipmentById(id);
-	        
-	        // 2. تنفيذ عملية الاعتماد والتحويل للأرشيف
 	        shipmentService.approveAndArchive(id);
 
-	        // 3. تسجيل العملية في سجل المراقبة فوراً مع الرمز الإحصائي
 	        try {
 	            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
 	            String username = (auth != null) ? auth.getName() : "مسؤول نظام";
 	            
 	            auditLogService.saveLog(
 	                shipment.getContainerNumber(), 
-	                shipment.getStatisticalCode(), // 🟢 الرمز الإحصائي الجديد
+	                shipment.getStatisticalCode(), 
 	                username, 
 	                "اعتماد وقبول", 
 	                "تمت الموافقة على مستندات الشحنة ونقلها إلى الأرشيف المعتمد بنجاح."
 	            );
 	        } catch (Exception e) {
-	            e.printStackTrace(); // لضمان عدم توقف النظام لو حدثت مشكلة في السجل
+	            e.printStackTrace(); 
 	        }
 
-	        // التوجيه للأرشيف المعتمد لرؤية النتيجة
 	        return "redirect:/shipments?status=APPROVED";
 	    }
+
 	    // ==========================================
-	    // ❌ 5. رفض الشحنة (تعديل لاستقبال السبب)
-	    // ==========================================
-	//
-//	    @PostMapping("/reject/{id}")
-//	    public String reject(@PathVariable Long id, @RequestParam("reason") String reason) {
-//	        Shipment shipment = shipmentService.getShipmentById(id);
-//	        
-//	        shipmentService.rejectShipment(id, reason);
-	//
-//	        // 🟢 السحر هنا: تسجيل عملية الرفض مع السبب في سجل المراقبة تلقائياً
-//	        try {
-//	            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-//	            String username = (auth != null) ? auth.getName() : "مسؤول نظام";
-//	            
-//	            auditLogService.saveLog(
-//	                shipment.getContainerNumber(), 
-//	                username, 
-//	                "رفض شحنة", 
-//	                "تم رفض الشحنة بسبب: " + reason
-//	            );
-//	        } catch (Exception e) {
-//	            e.printStackTrace();
-//	        }
-	//
-//	        return "redirect:/shipments?status=REJECTED";
-//	    }
-	 // ==========================================
-	    // ❌ 5. رفض الشحنة وتسجيل الإجراء مع السبب
+	    // ❌ 5. رفض الشحنة وتسجيل الإجراء مع السبب للموظف
 	    // ==========================================
 	    @PostMapping("/reject/{id}")
 	    public String reject(@PathVariable Long id, @RequestParam("reason") String reason) {
-	        // 1. جلب الشحنة لأخذ بياناتها قبل تغيير حالتها
 	        Shipment shipment = shipmentService.getShipmentById(id);
-	        
-	        // 2. تنفيذ عملية الرفض في الـ Service
 	        shipmentService.rejectShipment(id, reason);
 
-	        // 3. تسجيل عملية الرفض في سجل المراقبة مع الرمز الإحصائي وسبب الرفض
 	        try {
 	            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
 	            String username = (auth != null) ? auth.getName() : "مسؤول نظام";
 	            
 	            auditLogService.saveLog(
 	                shipment.getContainerNumber(), 
-	                shipment.getStatisticalCode(), // 🟢 الرمز الإحصائي الجديد
+	                shipment.getStatisticalCode(), 
 	                username, 
 	                "رفض شحنة", 
 	                "تم رفض الشحنة بسبب: " + reason
@@ -294,69 +261,24 @@ public class ShipmentController {
 	            e.printStackTrace();
 	        }
 
-	        // التوجيه لقائمة المرفوضات لرؤية النتيجة
 	        return "redirect:/shipments?status=REJECTED";
 	    }
 	    
-	    
-	    
 	    // ==========================================
-	    // 📁 6. عرض المستندات
+	    // 📁 6. عرض المستندات والتحقق من صلاحية الموظف الحالي
 	    // ==========================================
-//	    @GetMapping("/view-docs/{id}")
-//	    public String viewDocuments(@PathVariable Long id, Model model) {
-//	        Shipment shipment = shipmentService.getShipmentById(id);
-//	        model.addAttribute("shipment", shipment);
-//	        return "view-documents";
-//	    }
-//	    @GetMapping("/view-docs/{id}")
-//	    public String viewDocuments(@PathVariable Long id, Model model) {
-//	        // 1. جلب بيانات الشحنة الحالية كالعادة
-//	        Shipment shipment = shipmentService.getShipmentById(id);
-//	        model.addAttribute("shipment", shipment);
-	//
-//	        try {
-//	            // 2. معرفة اسم المستخدم الحالي اللي مسجل دخول
-//	            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-//	            String currentUsername = auth.getName();
-	//
-//	            // 3. جلب المستخدم من جدول users في نيون
-//	            User currentUser = userRepository.findByUsername(currentUsername).orElse(null);
-	//
-//	            if (currentUser != null && currentUser.getRoles() != null) {
-//	                // هنا السحر: التشييك المباشر على الكلمة اللي أنت كاتبها في نيون
-//	                if (currentUser.getRoles().contains("ROLE_ADMIN")) {
-//	                    model.addAttribute("userRole", "ADMIN");
-//	                } else if (currentUser.getRoles().contains("ROLE_EDITOR")) {
-//	                    model.addAttribute("userRole", "EDITOR");
-//	                } else {
-//	                    model.addAttribute("userRole", "USER"); // مستخدم عادي بدون صلاحيات اعتماد
-//	                }
-//	            } else {
-//	                model.addAttribute("userRole", "GUEST"); // ضيف
-//	            }
-//	        } catch (Exception e) {
-//	            model.addAttribute("userRole", "GUEST");
-//	        }
-	//
-//	        return "view-documents";
-//	    }
 	    @GetMapping("/view-docs/{id}")
 	    public String viewDocuments(@PathVariable Long id, Model model) {
-	        // 1. جلب بيانات الشحنة الحالية
 	        Shipment shipment = shipmentService.getShipmentById(id);
 	        model.addAttribute("shipment", shipment);
 
 	        try {
-	            // 2. معرفة اسم المستخدم الحالي المسجل
 	            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
 	            String currentUsername = auth.getName();
 
-	            // 3. جلب المستخدم من جدول users
 	            User currentUser = userRepository.findByUsername(currentUsername).orElse(null);
 
 	            if (currentUser != null && currentUser.getRole() != null) {
-	                // نبعث الكلمة المكتوبة في القاعدة مباشرة (ADMIN أو USER أو EDITOR)
 	                model.addAttribute("userRole", currentUser.getRole().toUpperCase());
 	            } else {
 	                model.addAttribute("userRole", "USER");
@@ -368,20 +290,17 @@ public class ShipmentController {
 	        return "view-documents";
 	    }
 	    
-	    
-	    
 	    // ==========================================
-	    // 🗑️ 7. حذف الشحنة
+	    // 🗑️ 7. حذف الشحنة من المنظومة (الموظف المسؤول)
 	    // ==========================================
 	    @GetMapping("/delete/{id}")
 	    public String delete(@PathVariable Long id, @RequestParam(name = "status", defaultValue = "PENDING") String status) {
 	        shipmentService.deleteShipment(id);
-	        // يعيدك لنفس الحالة التي كنت تتصفحها قبل الحذف
 	        return "redirect:/shipments?status=" + status;
 	    }
 
 	    // ==========================================
-	    // 🔌 8. API
+	    // 🔌 8. API جلب الكل
 	    // ==========================================
 	    @GetMapping("/api")
 	    @ResponseBody
@@ -389,67 +308,29 @@ public class ShipmentController {
 	        return shipmentService.getAllShipments();
 	    }
 
-
-
-
-
-
-
-
+	    // ==========================================
+	    // 🛠️ 9. واجهات تعديل وأرشيف المشغلين/المخلصين
+	    // ==========================================
 	    
-
-
-
-
-	 // 1. عرض صفحة التعديل المنفردة
+	    // عرض صفحة التعديل التلقائية التي تستقبل السلايدر والمستندات الحالية
+	    @GetMapping("/edit-list")
+	    public String showEditList(Model model) {
+	        return "shipment-edit-list"; // عدلها لتطابق اسم الملف الظاهر بالصورة الرابعة تماماً
+	    }
+	    
 	    @GetMapping("/edit/{id}")
 	    public String showEditForm(@PathVariable Long id, Model model) {
 	        Shipment shipment = shipmentService.getShipmentById(id);
-	        if (shipment == null) return "redirect:/shipments";
+	        if (shipment == null) return "redirect:/shipments/edit-list";
 	        
 	        model.addAttribute("shipment", shipment);
-	        // نرسل المستندات الحالية لعرضها في الصفحة
 	        model.addAttribute("existingDocs", shipment.getDocuments());
-	        return "shipment-edit"; // اسم ملف الـ HTML الجديد
+	        return "shipment-edit"; 
 	    }
 
-	 // ==========================================
-	    // 💾 دالة التحديث المعتمدة مع التحقق من الرمز الإحصائي
-	    // ==========================================
-//	    @PostMapping("/update/{id}")
-//	    @ResponseBody // يتعامل معها الـ Fetch في الصفحة بشكل مباشر
-//	    public ResponseEntity<?> updateShipment(@PathVariable Long id,
-//	                                           @ModelAttribute Shipment shipment,
-//	                                           @RequestParam(value="BOL_files", required=false) MultipartFile[] bolFiles,
-//	                                           @RequestParam(value="DO_files", required=false) MultipartFile[] doFiles,
-//	                                           @RequestParam(value="OC_files", required=false) MultipartFile[] ocFiles,
-//	                                           @RequestParam(value="INV_files", required=false) MultipartFile[] invFiles,
-//	                                           @RequestParam(value="PL_files", required=false) MultipartFile[] plFiles,
-//	                                           @RequestParam(value="AL_files", required=false) MultipartFile[] alFiles,
-//	                                           @RequestParam(value="CD_files", required=false) MultipartFile[] cdFiles,
-//	                                           @RequestParam(value="BI_files", required=false) MultipartFile[] biFiles,
-//	                                           @RequestParam(value="SI_files", required=false) MultipartFile[] siFiles) {
-	//
-//	        // 🛑 خطوة الفحص والمنع الذكي عند التعديل: 
-//	        // نتحقق لو الرمز مستخدم بالفعل في شحنة "أخرى" غير الشحنة الحالية (عشان ما يضربش في روحه)
-//	        if (shipmentService.isStatisticalCodeExistsForOther(shipment.getStatisticalCode(), id)) {
-//	            return ResponseEntity.badRequest().body("❌ خطأ: الرمز الإحصائي المعدل مستخدم بالفعل في شحنة أخرى مسبقاً!");
-//	        }
-	//
-//	        // 🟢 لو الرمز سليم، يكمل الكود رحلته الطبيعية للتحديث:
-//	        shipment.setId(id);
-//	        Shipment updated = shipmentService.updateShipment(id, shipment);
-	//
-//	        // معالجة الملفات الجديدة بنفس منطق الإضافة
-//	        shipmentService.processDocumentsAsync(
-//	                updated.getId(), bolFiles, doFiles, ocFiles, invFiles, 
-//	                plFiles, alFiles, cdFiles, biFiles, siFiles
-//	        );
-	//
-//	        return ResponseEntity.ok(updated);
-//	    }
+	    // دالة التحديث ومزامنة الأرشيف الرقمي عند تعديل البيانات أو المرفقات
 	    @PostMapping("/update/{id}")
-	    @ResponseBody // يتعامل معها الـ Fetch في الصفحة بشكل مباشر
+	    @ResponseBody 
 	    public ResponseEntity<?> updateShipment(@PathVariable Long id,
 	                                           @ModelAttribute Shipment shipment,
 	                                           @RequestParam(value="BOL_files", required=false) MultipartFile[] bolFiles,
@@ -462,23 +343,13 @@ public class ShipmentController {
 	                                           @RequestParam(value="BI_files", required=false) MultipartFile[] biFiles,
 	                                           @RequestParam(value="SI_files", required=false) MultipartFile[] siFiles) {
 
-	        // 🛑 خطوة الفحص والمنع الذكي عند التعديل: 
-	        if (shipmentService.isStatisticalCodeExistsForOther(shipment.getStatisticalCode(), id)) {
-	            return ResponseEntity.badRequest().body("❌ خطأ: الرمز الإحصائي المعدل مستخدم بالفعل في شحنة أخرى مسبقاً!");
+	        if (shipmentService.isShipmentDuplicateForOther(shipment.getStatisticalCode(), shipment.getContainerNumber(), id)) {
+	            return ResponseEntity.badRequest().body("❌ خطأ: هذه الحاوية مسجلة بالفعل مسبقاً تحت نفس الرمز الإحصائي لهذه الجهة!");
 	        }
 
-	        // 🟢 يكمل الكود رحلته الطبيعية للتحديث:
 	        shipment.setId(id);
 	        Shipment updated = shipmentService.updateShipment(id, shipment);
 
-	        // 🔥 الحل القاتل: نعدلوا الحالة وسبب الرفض على الكائن الـ updated اللي راجع من السيرفر ونحفظوه فوراً
-	        updated.setStatus(ShipmentStatus.PENDING);
-	        updated.setRejectionReason(null); // مسح سبب الرفض القديم
-	        
-	        // حفظ التغيير الأخير للحالة في قاعدة البيانات مباشرة
-	        shipmentRepository.save(updated); 
-
-	        // معالجة الملفات الجديدة بنفس منطق الإضافة
 	        shipmentService.processDocumentsAsync(
 	                updated.getId(), bolFiles, doFiles, ocFiles, invFiles, 
 	                plFiles, alFiles, cdFiles, biFiles, siFiles
@@ -487,82 +358,49 @@ public class ShipmentController {
 	        return ResponseEntity.ok(updated);
 	    }
 
-
-
-
-
-
-	    @GetMapping("/edit-list")
-	    public String showEditList(Model model) {
-	        // استدعاء الميثود من الريبوزتري مباشرة لو السيرفس معلقة
-	        List<Shipment> pendingShipments = shipmentRepository.findByStatus(ShipmentStatus.PENDING);
-	        model.addAttribute("shipments", pendingShipments);
-	        return "shipment-edit-list"; 
-	    }
-	    
-	    
+	    // دالة البحث والملء عبر المفاتيح المستلمة من الـ Fetch والـ onload الجديد
 	    @GetMapping("/api/search")
 	    @ResponseBody
 	    public ResponseEntity<?> searchShipment(@RequestParam String q) {
 	        Shipment shipment = shipmentService.getShipmentByAnyId(q.trim());
 	        
 	        if (shipment != null) {
-	            java.util.Map<String, Object> response = new java.util.HashMap<>();
+	            Map<String, Object> response = new HashMap<>();
 	            response.put("id", shipment.getId());
 	            response.put("customsbroker", shipment.getCustomsbroker());
 	            response.put("brokerPhone", shipment.getBrokerPhone());
 	            response.put("containerNumber", shipment.getContainerNumber());
 	            response.put("statisticalCode", shipment.getStatisticalCode());
-	            
-	            // 🌟 الإضافة الجديدة: تمرير البيانات الموسعة لكي يقرأها الـ JavaScript بنجاح
 	            response.put("entityName", shipment.getEntityName() != null ? shipment.getEntityName() : "");
 	            response.put("brokerNationalId", shipment.getBrokerNationalId() != null ? shipment.getBrokerNationalId() : "");
 	            
-	            // 🌟 بناء مصفوفة مستندات مخصصة تضمن وصول الـ ID والـ fileUrl بوضوح تام للـ JS
-	            java.util.List<java.util.Map<String, Object>> docsList = new java.util.ArrayList<>();
+	            List<Map<String, Object>> docsList = new java.util.ArrayList<>();
 	            
 	            if (shipment.getDocuments() != null) {
 	                for (Document doc : shipment.getDocuments()) {
 	                    if (doc.getType() != null) {
-	                        java.util.Map<String, Object> dMap = new java.util.HashMap<>();
-	                        
-	                        // تمرير الـ ID الخاص بالمستند كـ Long بشكل صريح
+	                        Map<String, Object> dMap = new HashMap<>();
 	                        dMap.put("id", doc.getId()); 
-	                        
-	                        // تمرير الرابط الخاص بالمستند
 	                        dMap.put("fileUrl", doc.getFileUrl() != null ? doc.getFileUrl() : "");
-	                        
-	                        // تمرير نوع المستند (Enum اسم كامل) ليقوم الجافا سكريبت الحالي بـ ترجمته
 	                        dMap.put("type", doc.getType().toString());
-	                        
 	                        docsList.add(dMap);
 	                    }
 	                }
 	            }
-	            
-	            // استبدال قائمة المستندات الأصلية بالقائمة المخصصة الصريحة
 	            response.put("documents", docsList); 
-	            
 	            return ResponseEntity.ok(response);
 	        }
 	        return ResponseEntity.notFound().build();
 	    }
 	    
-
-	    
-	    
-	    
-	    
-	    
-	 // ==========================================
-	 // 🗑️ دالة حذف مستند فردي من الأرشيف أثناء التعديل
-	 // ==========================================
+	    // ========================================================
+	    // 🗑️ 10. دالة حذف مستند فردي المصححة والمكتملة بالكامل
+	    // ========================================================
 	    @DeleteMapping("/api/documents/{docId}")
 	    @ResponseBody
 	    public ResponseEntity<?> deleteDocumentFromArchive(@PathVariable Long docId) {
 	        try {
-	            // 1. جلب الشحنة المرتبطة بهذا المستند أولاً لضمان تحديث الـ Cache في الـ Hibernate
-	            // نقوم بالبحث في كل الشحنات للتأكد من وجود المستند
+	            // 1. جلب الشحنة المرتبطة بالمستند لتحديث قائمة الهيبيرنيت بداخل الـ Transaction
 	            java.util.Optional<Shipment> shipmentOpt = shipmentRepository.findAll().stream()
 	                    .filter(s -> s.getDocuments() != null && s.getDocuments().stream().anyMatch(d -> d.getId().equals(docId)))
 	                    .findFirst();
@@ -570,32 +408,18 @@ public class ShipmentController {
 	            if (shipmentOpt.isPresent()) {
 	                Shipment shipment = shipmentOpt.get();
 	                
-	                // 2. إزالة المستند من قائمة المستندات الخاصة بالشحنة في الجافا (لتفعيل الـ orphanRemoval = true)
-	                shipment.getDocuments().removeIf(doc -> doc.getId().equals(docId));
-	                
-	                // 3. حفظ الشحنة بعد التعديل، وبسبب وجود cascade و orphanRemoval سيقوم الـ JPA بحذف المستند تلقائياً من الـ DB
+	                // 2. فك ارتباط المستند من قائمة مستندات الشحنة لكي يختفي من الـ Cache
+	                shipment.getDocuments().removeIf(d -> d.getId().equals(docId));
 	                shipmentRepository.save(shipment);
-
-	                return ResponseEntity.ok(java.util.Map.of("success", true, "message", "تم حذف المستند بنجاح"));
-	            } else {
-	                return ResponseEntity.status(404).body(java.util.Map.of("success", false, "message", "المستند غير موجود أو تم حذفه مسبقاً"));
+	                
+	                // 3. استدعاء السيرفس لحذفه نهائياً من قاعدة البيانات والـ Cloud (إذا كنت مبرمج الـ Cloud Delete بداخلها)
+	                shipmentService.deleteDocumentById(docId); 
+	                
+	                return ResponseEntity.ok().body(Map.of("success", true, "message", "🗑️ تم إقصاء المستند من الأرشيف السحابي بنجاح."));
 	            }
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("⚠️ عذراً، لم يتم العثور على المستند المطلوب في قاعدة البيانات.");
 	        } catch (Exception e) {
-	            e.printStackTrace(); // لطباعة الخطأ في الـ Console لمعرفته إن حدث
-	            return ResponseEntity.status(500).body(java.util.Map.of("success", false, "message", "حدث خطأ أثناء الحذف: " + e.getMessage()));
+	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("❌ حدث خطأ برمي أثناء محاولة مسح المستند.");
 	        }
 	    }
-	    
-	  
-
-	    
-	 // ==========================================
-	    // 🕵️ شاشة الرقابة الصارمة وسجل العمليات
-	    // ==========================================
-	    @GetMapping("/audit-log") // 👈 تم حذف /shipments الزائدة لأنها مضافة تلقائياً فوق الكلاس
-	    public String showAuditLog(Model model) {
-	        List<AuditLog> logs = auditLogService.getAllLogsInOrder(); 
-	        model.addAttribute("auditLogs", logs);
-	        return "audit-log"; 
-	    }
-}
+	}

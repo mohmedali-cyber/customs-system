@@ -13,7 +13,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final CustomUserDetailsService userDetailsService;
+	private final CustomUserDetailsService userDetailsService;
 
     public SecurityConfig(CustomUserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
@@ -25,18 +25,33 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) 
+            .csrf(csrf -> csrf.disable()) // تعطيل مؤقت للتطوير لتسهيل طلبات الـ Fetch
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/register", "/css/**", "/images/**", "/js/**").permitAll()
+                // 1. المصادر العامة المسموحة للجميع + روابط بوابة المخلصين والـ APIs وصفحة التسجيل الجديد
+                .requestMatchers(
+                    "/login", 
+                    "/register", 
+                    "/css/**", 
+                    "/images/**", 
+                    "/js/**",
+                    "/shipments/gate",           // واجهة الدخول برقم المعاملة والرمز السري
+                    "/shipments/track-login",     // دالة التحقق الآمن من الرمز السري عبر الـ Fetch
+                    "/shipments/new",             // 🟢 فتح صفحة تسجيل شحنة جديدة للمخلصين دون تحويل لصفحة الـ login
+                    "/shipments/edit-list",       // واجهة السلايدر لتعديل بيانات ومستندات الشحنة
+                    "/shipments/api/search",      // API جلب بيانات الشحنة وتفاصيلها
+                    "/shipments/api/documents/**"   // API حذف المستند الفردي
+                ).permitAll()
                 
+                // 2. روابط الاعتماد والرفض (خاصة بالـ ADMIN والـ EDITOR فقط من الموظفين)
                 .requestMatchers("/shipments/approve/**", "/shipments/reject/**").hasAnyRole("ADMIN", "EDITOR")
                 
-                               .requestMatchers("/admin/**").hasRole("ADMIN")
+                // 3. تأمين لوحات التحكم الحساسة لو كانت موجودة مستقبلاً
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 
+                // 4. أي طلب آخر داخل المنظومة يتطلب دخول الموظف بيوزر وباسورد (مثل لوحة تحكم الموظفين أو الأرشيف الكامل)
                 .anyRequest().authenticated()
             )
             .formLogin(login -> login

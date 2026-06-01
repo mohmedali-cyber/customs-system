@@ -503,20 +503,22 @@ function toggleGrid(type) {
 /* =======================================================
    🔥 التعديل المعتمد للتحقق + الحفظ لقراءة الخطأ من السيرفر
 ======================================================= */
+/* =======================================================
+   🔥 الدالة المحدثة: تستقبل رقم الدخول والرمز السري وتعرضهم للمخلص
+======================================================= */
 async function validateAndSave() {
     const broker = document.getElementById('brokerInput');
-    const brokerNationalId = document.getElementById('brokerNationalIdInput'); // الحقل الجديد 1
+    const brokerNationalId = document.getElementById('brokerNationalIdInput'); 
     const phone = document.getElementById('phoneInput');
-    const entityName = document.getElementById('entityNameInput'); // الحقل الجديد 2
-    const container = document.getElementById('containerNumberInput'); // تم التحديث ليقرأ بالـ id
-    const statistical = document.getElementById('statisticalCodeInput'); // تم التحديث ليقرأ بالـ id
+    const entityName = document.getElementById('entityNameInput'); 
+    const container = document.getElementById('containerNumberInput'); 
+    const statistical = document.getElementById('statisticalCodeInput'); 
     const form = document.getElementById('mainForm');
     const btn = document.getElementById('finalSaveBtn');
 
-    // مصفوفة الحقول متضمنة الإضافات الجديدة
     const fields = [
         { element: broker, name: "اسم المخلص" },
-        { element: brokerNationalId, name: "الالرقم الوطني للمخلص" },
+        { element: brokerNationalId, name: "الرقم الوطني للمخلص" },
         { element: phone, name: "رقم الهاتف" },
         { element: entityName, name: "اسم الجهة" },
         { element: container, name: "رقم الحاوية" },
@@ -539,7 +541,6 @@ async function validateAndSave() {
         return;
     }
 
-    // التحقق من طول رقم الهاتف (10 أرقام)
     const phoneValue = phone.value.trim();
     if (phoneValue.length !== 10) {
         phone.style.cssText = "border: 2px solid red !important; background-color: #fff5f5;";
@@ -548,7 +549,6 @@ async function validateAndSave() {
         return;
     }
 
-    // التحقق من طول الرقم الوطني (12 رقماً)
     const nationalIdValue = brokerNationalId.value.trim();
     if (nationalIdValue.length !== 12) {
         brokerNationalId.style.cssText = "border: 2px solid red !important; background-color: #fff5f5;";
@@ -570,16 +570,21 @@ async function validateAndSave() {
     }
 
     btn.disabled = true;
-    btn.innerHTML = `<span>⏳ جاري الحفظ...</span>`;
+    btn.innerHTML = `<span>⏳ جاري الحفظ والمعالجة...</span>`;
 
     try {
         const formData = new FormData(form);
         const res = await fetch(form.action, { method: "POST", body: formData });
         
         if (res.ok) {
-            showToast("✅ تم الحفظ بنجاح", "success");
-            setTimeout(() => location.reload(), 2000);
+            // 🟢 استلام الـ JSON اللي فيه أرقام الدخول والتحقق
+            const data = await res.json(); 
+            
+            // عرض النتيجة للمخلص بأسلوب مريح وواضح جداً
+            showReceiptModal(data.shipmentId, data.verificationCode);
+            
         } else { 
+            // 🔴 معالجة حالة الخطأ وتكرار البيانات
             try {
                 const errorJson = await res.json();
                 if (errorJson && errorJson.message) {
@@ -589,7 +594,7 @@ async function validateAndSave() {
                 }
             } catch (jsonErr) {
                 const errorText = await res.text();
-                if (errorText && errorText.includes("الرمز الإحصائي")) {
+                if (errorText && (errorText.includes("مكرر") || errorText.includes("الرمز الإحصائي"))) {
                     showToast(errorText, "error");
                 } else {
                     showToast("❌ عذراً، الرمز الإحصائي مكرر أو البيانات غير صحيحة!", "error");
@@ -605,6 +610,49 @@ async function validateAndSave() {
         btn.disabled = false;
         btn.innerHTML = "<span> حفظ </span>";
     }
+}
+
+/* =======================================================
+   📦 دالة عرض الوصل الجمركي الجديد (رقم الدخول + الرمز السري)
+======================================================= */
+function showReceiptModal(shipmentId, verificationCode) {
+    const overlay = document.createElement("div");
+    overlay.style.cssText = `position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.6); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; z-index:20000; opacity:0; transition:0.3s;`;
+    
+    const box = document.createElement("div");
+    const logoUrl = "/images/im.png?v=" + new Date().getTime();
+
+    box.innerHTML = `
+        <div style="margin-bottom:15px;"><img src="${logoUrl}" style="width:110px; height:auto; display:block; margin:0 auto;"></div>
+        <div style="font-size:22px; font-weight:bold; color:#10b981; margin-bottom:15px; font-family:'Cairo';">🎉 تم حفظ الشحنة وأرشفتها مبدئياً!</div>
+        
+        <div style="background:#f8fafc; border:1px dashed #cbd5e1; padding:15px; border-radius:12px; margin-bottom:20px; text-align:right; font-family:'Cairo';">
+            <p style="margin:5px 0; font-size:15px; color:#475569;">📌 رقم الدخول الجمركي: <strong style="font-size:20px; color:#0f172a; float:left; font-family:monospace;">${shipmentId}</strong></p>
+            <p style="margin:15px 0 5px 0; font-size:15px; color:#475569;">🔐 رمز التحقق السري: <strong style="font-size:20px; color:#2563eb; float:left; font-family:monospace; letter-spacing:2px;">${verificationCode}</strong></p>
+        </div>
+        
+        <div style="font-size:13px; color:#ef4444; font-weight:bold; margin-bottom:20px; font-family:'Cairo'; line-height:1.5;">⚠️ تنبيه هام: يرجى تصوير الشاشة أو الاحتفاظ بهذه الأرقام؛ لن تتمكن من متابعة أو تعديل الشحنة بدونها!</div>
+        
+        <button type="button" id="closeReceiptBtn" style="background:#1e293b; color:white; border:none; padding:10px 30px; font-size:16px; font-weight:bold; border-radius:8px; cursor:pointer; font-family:'Cairo'; width:100%; transition:0.2s;">إغلاق وإنهاء</button>
+    `;
+
+    box.style.cssText = `background:white; padding:35px; border-radius:24px; text-align:center; box-shadow:0 25px 50px -12px rgba(0,0,0,0.4); transform:scale(0.8); transition:0.3s; width:90%; max-width:440px; border-top:6px solid #10b981;`;
+
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    
+    // أنيميشن الظهور
+    setTimeout(() => { overlay.style.opacity = "1"; box.style.transform = "scale(1)"; }, 50);
+    
+    // عند الضغط على زر الإغلاق يعيد تحميل الصفحة لتفريغ الحقول ونبدأ شحنة جديدة
+    document.getElementById("closeReceiptBtn").onclick = function() {
+        overlay.style.opacity = "0";
+        box.style.transform = "scale(0.8)";
+        setTimeout(() => {
+            overlay.remove();
+            location.reload();
+        }, 300);
+    };
 }
 function showToast(message, type = "success") {
     const overlay = document.createElement("div");

@@ -11,19 +11,19 @@ import com.customs.customs_system.repository.AuditLogRepository;
 @Service
 public class AuditLogService {
 
-    private final AuditLogRepository auditLogRepository;
+	 private final AuditLogRepository auditLogRepository;
 
-    public AuditLogService(AuditLogRepository auditLogRepository) {
-        this.auditLogRepository = auditLogRepository;
-    }
+	    public AuditLogService(AuditLogRepository auditLogRepository) {
+	        this.auditLogRepository = auditLogRepository;
+	    }
 
-    public List<AuditLog> getAllLogsInOrder() {
-        return auditLogRepository.findAllByOrderByActionDateDesc();
-    }
+	    public List<AuditLog> getAllLogsInOrder() {
+	        return auditLogRepository.findAllByOrderByActionDateDesc();
+	    }
 
-    // 🟢 تحديث الدالة لتستقبل الرمز الإحصائي وتخزنه
-    public void saveLog(String container, String statisticalCode, String user, String action, String details) {
-        AuditLog log = new AuditLog(container, statisticalCode, user, action, details);
-        auditLogRepository.save(log);
-    }
-}
+	    // 🟢 تحديث الدالة لتستقبل الرمز الإحصائي وتخزنه
+	    public void saveLog(String container, String statisticalCode, String user, String action, String details) {
+	        AuditLog log = new AuditLog(container, statisticalCode, user, action, details);
+	        auditLogRepository.save(log);
+	    }
+	}
