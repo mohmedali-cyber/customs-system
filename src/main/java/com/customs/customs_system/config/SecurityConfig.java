@@ -30,17 +30,19 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable()) // تعطيل مؤقت للتطوير لتسهيل طلبات الـ Fetch
             .authorizeHttpRequests(auth -> auth
-                // 1. المصادر العامة المسموحة للجميع + روابط بوابة المخلصين والـ APIs وصفحة التسجيل الجديد
+                // 1. المصادر العامة المسموحة للجميع + روابط بوابة المخلصين بالكامل (عرض وإرسال وحفظ)
                 .requestMatchers(
                     "/login", 
                     "/register", 
                     "/css/**", 
                     "/images/**", 
                     "/js/**",
-                    "/shipments/gate",           // واجهة الدخول برقم المعاملة والرمز السري
+                    "/shipments/gate",           // واجهة الدخول برقم المعاملة والرمز السري (النسخة السوداء)
                     "/shipments/track-login",     // دالة التحقق الآمن من الرمز السري عبر الـ Fetch
-                    "/shipments/new",             // 🟢 فتح صفحة تسجيل شحنة جديدة للمخلصين دون تحويل لصفحة الـ login
+                    "/shipments/new",             // فتح صفحة تسجيل شحنة جديدة
+                    "/shipments/save",            // 🔥 إجباري: فتح دالة حفظ الشحنة الجديدة القادمة من استمارة المخلص
                     "/shipments/edit-list",       // واجهة السلايدر لتعديل بيانات ومستندات الشحنة
+                    "/shipments/edit/**",         // 🔥 إجباري: فتح مسار التعديل والتحديث الخاص بالشحنة
                     "/shipments/api/search",      // API جلب بيانات الشحنة وتفاصيلها
                     "/shipments/api/documents/**"   // API حذف المستند الفردي
                 ).permitAll()
@@ -51,7 +53,7 @@ public class SecurityConfig {
                 // 3. تأمين لوحات التحكم الحساسة لو كانت موجودة مستقبلاً
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 
-                // 4. أي طلب آخر داخل المنظومة يتطلب دخول الموظف بيوزر وباسورد (مثل لوحة تحكم الموظفين أو الأرشيف الكامل)
+                // 4. أي طلب آخر داخل المنظومة يتطلب دخول الموظف بيوزر وباسورد
                 .anyRequest().authenticated()
             )
             .formLogin(login -> login
